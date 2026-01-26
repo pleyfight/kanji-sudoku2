@@ -1,4 +1,4 @@
-// Victory Modal - Shows when the puzzle is completed
+// Victory Modal with Liquid Glass styling
 import React from 'react';
 import { formatTime } from '../lib/gameState';
 
@@ -26,76 +26,110 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
     const labels = {
         en: {
             title: 'Congratulations!',
-            subtitle: 'You completed the puzzle!',
-            score: 'Final Score',
+            subtitle: 'Puzzle completed',
+            score: 'Score',
             time: 'Time',
-            words: 'Words Found',
-            hints: 'Hints Used',
+            words: 'Words',
+            hints: 'Hints',
             newGame: 'Play Again',
         },
         ja: {
             title: 'おめでとう！',
-            subtitle: 'パズルを完成させました！',
-            score: '最終スコア',
+            subtitle: 'パズル完成',
+            score: 'スコア',
             time: '時間',
-            words: '発見した単語',
-            hints: '使用したヒント',
-            newGame: 'もう一度プレイ',
+            words: '単語',
+            hints: 'ヒント',
+            newGame: 'もう一度',
         },
     };
 
     return (
-        <div className="fixed inset-0 bg-ink/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-paper rounded-2xl shadow-2xl max-w-md w-full p-8 text-center transform transition-all animate-bounce-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-lg animate-fade-in" />
+
+            {/* Panel */}
+            <div className="relative w-full max-w-sm glass rounded-3xl p-8 text-center animate-slide-up">
                 {/* Celebration Icon */}
                 <div className="text-6xl mb-4">🎉</div>
 
                 {/* Title */}
-                <h2 className="text-3xl font-bold text-ink mb-2">
+                <h2
+                    className="text-2xl font-bold mb-1"
+                    style={{ color: 'var(--text-primary)' }}
+                >
                     {labels[language].title}
                 </h2>
-                <p className="text-ink/60 mb-6">
+                <p
+                    className="text-sm mb-6"
+                    style={{ color: 'var(--text-secondary)' }}
+                >
                     {labels[language].subtitle}
                 </p>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-3 mb-6">
                     {/* Score */}
-                    <div className="bg-indigo/10 rounded-xl p-4">
-                        <span className="text-xs text-indigo/70 uppercase tracking-wide block">
+                    <div className="glass-subtle rounded-xl p-4">
+                        <span
+                            className="text-xs uppercase tracking-wider block mb-1"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
                             {labels[language].score}
                         </span>
-                        <span className="text-3xl font-bold text-indigo">
+                        <span
+                            className="text-2xl font-bold"
+                            style={{ color: 'var(--accent)' }}
+                        >
                             {score.toLocaleString()}
                         </span>
                     </div>
 
                     {/* Time */}
-                    <div className="bg-ink/5 rounded-xl p-4">
-                        <span className="text-xs text-ink/50 uppercase tracking-wide block">
+                    <div className="glass-subtle rounded-xl p-4">
+                        <span
+                            className="text-xs uppercase tracking-wider block mb-1"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
                             {labels[language].time}
                         </span>
-                        <span className="text-3xl font-bold text-ink font-mono">
+                        <span
+                            className="text-2xl font-bold font-mono"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
                             {formatTime(elapsedTime)}
                         </span>
                     </div>
 
                     {/* Words */}
-                    <div className="bg-cinnabar/10 rounded-xl p-4">
-                        <span className="text-xs text-cinnabar/70 uppercase tracking-wide block">
+                    <div className="glass-subtle rounded-xl p-4">
+                        <span
+                            className="text-xs uppercase tracking-wider block mb-1"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
                             {labels[language].words}
                         </span>
-                        <span className="text-3xl font-bold text-cinnabar">
+                        <span
+                            className="text-2xl font-bold"
+                            style={{ color: 'var(--success)' }}
+                        >
                             {wordsFound}
                         </span>
                     </div>
 
                     {/* Hints */}
-                    <div className="bg-ink/5 rounded-xl p-4">
-                        <span className="text-xs text-ink/50 uppercase tracking-wide block">
+                    <div className="glass-subtle rounded-xl p-4">
+                        <span
+                            className="text-xs uppercase tracking-wider block mb-1"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
                             {labels[language].hints}
                         </span>
-                        <span className="text-3xl font-bold text-ink">
+                        <span
+                            className="text-2xl font-bold"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
                             {hintsUsed}
                         </span>
                     </div>
@@ -104,7 +138,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 {/* New Game Button */}
                 <button
                     onClick={onNewGame}
-                    className="w-full py-4 bg-indigo text-paper rounded-xl font-bold text-lg hover:bg-indigo/90 transition-colors shadow-lg"
+                    className="w-full py-4 rounded-xl font-semibold text-lg transition-all hover:shadow-xl active:scale-98"
+                    style={{ background: 'var(--accent)', color: 'white' }}
                 >
                     {labels[language].newGame}
                 </button>

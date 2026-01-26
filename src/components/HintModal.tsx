@@ -1,4 +1,4 @@
-// HintModal Component - Shows meaning-based hints without revealing the answer
+// HintModal with Liquid Glass styling
 import React from 'react';
 
 interface HintModalProps {
@@ -22,60 +22,80 @@ export const HintModal: React.FC<HintModalProps> = ({
             meaning: 'Meaning',
             reading: 'Reading',
             close: 'Got it!',
-            noHints: 'No hints available',
         },
         ja: {
             title: 'ヒント',
             meaning: '意味',
             reading: '読み方',
             close: 'わかった！',
-            noHints: 'ヒントがありません',
         },
     };
 
     return (
-        <div className="fixed inset-0 bg-ink/50 flex items-center justify-center z-50 p-4">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-md animate-fade-in" />
+
+            {/* Panel */}
             <div
-                className="bg-paper rounded-xl shadow-2xl max-w-sm w-full p-6 transform transition-all"
+                className="relative w-full max-w-sm glass rounded-3xl p-6 animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center gap-2 mb-4">
-                    <svg
-                        className="w-6 h-6 text-indigo"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                <div className="flex items-center gap-3 mb-5">
+                    <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ background: 'var(--accent)', color: 'white' }}
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                        />
-                    </svg>
-                    <h3 className="text-xl font-bold text-ink">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                            />
+                        </svg>
+                    </div>
+                    <h3
+                        className="text-xl font-semibold"
+                        style={{ color: 'var(--text-primary)' }}
+                    >
                         {labels[language].title}
                     </h3>
                 </div>
 
                 {/* Hint Content */}
                 <div className="space-y-3 mb-6">
-                    <div className="bg-indigo/10 rounded-lg p-4">
-                        <span className="text-xs text-indigo/70 uppercase tracking-wide block mb-1">
+                    <div className="glass-subtle rounded-xl p-4">
+                        <span
+                            className="text-xs uppercase tracking-wider font-medium block mb-1"
+                            style={{ color: 'var(--accent)' }}
+                        >
                             {labels[language].meaning}
                         </span>
-                        <p className="text-lg text-ink font-medium">
+                        <p
+                            className="text-lg font-medium"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
                             {hint.meaning}
                         </p>
                     </div>
 
                     {hint.reading && (
-                        <div className="bg-ink/5 rounded-lg p-4">
-                            <span className="text-xs text-ink/50 uppercase tracking-wide block mb-1">
+                        <div className="glass-subtle rounded-xl p-4">
+                            <span
+                                className="text-xs uppercase tracking-wider font-medium block mb-1"
+                                style={{ color: 'var(--text-muted)' }}
+                            >
                                 {labels[language].reading}
                             </span>
-                            <p className="text-lg text-ink font-serif">
+                            <p
+                                className="text-lg kanji-cell"
+                                style={{ color: 'var(--text-primary)' }}
+                            >
                                 {hint.reading}
                             </p>
                         </div>
@@ -85,7 +105,8 @@ export const HintModal: React.FC<HintModalProps> = ({
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="w-full py-3 bg-indigo text-paper rounded-lg font-medium hover:bg-indigo/90 transition-colors"
+                    className="w-full py-3 rounded-xl font-medium transition-all hover:shadow-lg active:scale-98"
+                    style={{ background: 'var(--accent)', color: 'white' }}
                 >
                     {labels[language].close}
                 </button>

@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -11,11 +12,52 @@ export default {
         sans: ['"Zen Kaku Gothic New"', '"Yu Gothic"', 'sans-serif'],
       },
       colors: {
-        'paper': '#f4f1ea', // Creamy rice paper
-        'ink': '#2b2b2b',   // Sumi ink black
-        'cinnabar': '#cd4435', // Seal red
-        'indigo': '#2c4f7c', // Traditional indigo
-      }
+        // Light mode
+        'paper': '#f0f4f8',
+        'ink': '#1a1a2e',
+        'cinnabar': '#ef4444',
+        'indigo': '#3b82f6',
+        // Glass effects
+        'glass': {
+          light: 'rgba(255, 255, 255, 0.7)',
+          dark: 'rgba(30, 41, 59, 0.8)',
+        },
+        // Accent colors
+        'accent': {
+          DEFAULT: '#3b82f6',
+          glow: '#60a5fa',
+          success: '#22c55e',
+        },
+      },
+      backdropBlur: {
+        'glass': '12px',
+      },
+      boxShadow: {
+        'glass': '0 8px 32px rgba(0, 0, 0, 0.1)',
+        'glass-dark': '0 8px 32px rgba(0, 0, 0, 0.3)',
+        'glow': '0 0 20px rgba(59, 130, 246, 0.3)',
+        'glow-success': '0 0 20px rgba(34, 197, 94, 0.3)',
+        'inner-glass': 'inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.2)' },
+          '50%': { boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)' },
+        },
+      },
     },
   },
   plugins: [],

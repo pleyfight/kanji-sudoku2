@@ -1,4 +1,4 @@
-// Timer Component - Displays elapsed time with pause/resume
+// Timer Component with Liquid Glass styling
 import React from 'react';
 import { formatTime } from '../lib/gameState';
 
@@ -21,22 +21,26 @@ export const Timer: React.FC<TimerProps> = ({
     };
 
     return (
-        <div className="flex items-center gap-3 bg-paper border border-ink/20 rounded-lg px-4 py-2 shadow-sm">
+        <div className="flex items-center gap-3 glass rounded-2xl px-5 py-3">
             <div className="flex items-center gap-2">
                 <svg
-                    className="w-5 h-5 text-ink/60"
+                    className="w-5 h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    style={{ color: 'var(--text-muted)' }}
                 >
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
+                        strokeWidth={1.5}
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                 </svg>
-                <span className="text-2xl font-mono font-bold text-ink tabular-nums">
+                <span
+                    className="text-2xl font-mono font-semibold tabular-nums"
+                    style={{ color: 'var(--text-primary)' }}
+                >
                     {formatTime(elapsedTime)}
                 </span>
             </div>
@@ -44,11 +48,12 @@ export const Timer: React.FC<TimerProps> = ({
             <button
                 onClick={onTogglePause}
                 className={`
-          px-3 py-1 rounded text-sm font-medium transition-colors
+          px-4 py-1.5 rounded-xl text-sm font-medium transition-all
           ${isPaused
-                        ? 'bg-indigo text-paper hover:bg-indigo/80'
-                        : 'bg-ink/10 text-ink hover:bg-ink/20'}
+                        ? 'bg-accent text-white shadow-lg hover:shadow-xl'
+                        : 'glass-subtle glass-hover'}
         `}
+                style={!isPaused ? { color: 'var(--text-secondary)' } : undefined}
             >
                 {isPaused ? labels[language].resume : labels[language].pause}
             </button>

@@ -1,4 +1,4 @@
-// ScoreBoard Component - Displays current score and stats
+// ScoreBoard Component with Liquid Glass styling
 import React from 'react';
 
 interface ScoreBoardProps {
@@ -20,47 +20,76 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
         en: {
             score: 'Score',
             hints: 'Hints',
-            words: 'Words Found',
+            words: 'Words',
         },
         ja: {
             score: 'スコア',
             hints: 'ヒント',
-            words: '発見した単語',
+            words: '単語',
         },
     };
 
     return (
-        <div className="bg-paper border border-ink/20 rounded-lg p-4 shadow-sm">
-            <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="glass rounded-2xl px-5 py-3">
+            <div className="flex items-center gap-6">
                 {/* Score */}
-                <div className="flex flex-col">
-                    <span className="text-xs text-ink/60 uppercase tracking-wide">
+                <div className="flex flex-col items-center">
+                    <span
+                        className="text-xs uppercase tracking-wider font-medium"
+                        style={{ color: 'var(--text-muted)' }}
+                    >
                         {labels[language].score}
                     </span>
-                    <span className="text-2xl font-bold text-indigo tabular-nums">
+                    <span
+                        className="text-2xl font-bold tabular-nums"
+                        style={{ color: 'var(--accent)' }}
+                    >
                         {score.toLocaleString()}
                     </span>
                 </div>
 
+                {/* Divider */}
+                <div className="w-px h-10 bg-black/10 dark:bg-white/10" />
+
                 {/* Words Found */}
-                <div className="flex flex-col">
-                    <span className="text-xs text-ink/60 uppercase tracking-wide">
+                <div className="flex flex-col items-center">
+                    <span
+                        className="text-xs uppercase tracking-wider font-medium"
+                        style={{ color: 'var(--text-muted)' }}
+                    >
                         {labels[language].words}
                     </span>
-                    <span className="text-2xl font-bold text-cinnabar tabular-nums">
+                    <span
+                        className="text-2xl font-bold tabular-nums"
+                        style={{ color: 'var(--success)' }}
+                    >
                         {wordsFound}
                     </span>
                 </div>
 
+                {/* Divider */}
+                <div className="w-px h-10 bg-black/10 dark:bg-white/10" />
+
                 {/* Hints */}
-                <div className="flex flex-col">
-                    <span className="text-xs text-ink/60 uppercase tracking-wide">
+                <div className="flex flex-col items-center">
+                    <span
+                        className="text-xs uppercase tracking-wider font-medium"
+                        style={{ color: 'var(--text-muted)' }}
+                    >
                         {labels[language].hints}
                     </span>
-                    <span className="text-2xl font-bold text-ink tabular-nums">
+                    <span
+                        className="text-2xl font-bold tabular-nums"
+                        style={{ color: 'var(--text-primary)' }}
+                    >
                         {hintsRemaining}
                         {hintsUsed > 0 && (
-                            <span className="text-sm text-ink/40 ml-1">(-{hintsUsed})</span>
+                            <span
+                                className="text-sm ml-1"
+                                style={{ color: 'var(--text-muted)' }}
+                            >
+                                -{hintsUsed}
+                            </span>
                         )}
                     </span>
                 </div>

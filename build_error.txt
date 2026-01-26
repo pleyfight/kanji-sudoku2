@@ -1,0 +1,4 @@
+src/data/puzzles/easyPuzzles.ts(7,10): error TS6133: 'createGrid' is declared but its value is never read.
+src/data/puzzles/easyPuzzles.ts(10,19): error TS6133: 'symbolIndex' is declared but its value is never read.
+src/data/puzzles/easyPuzzles.ts(18,10): error TS6133: 'createSolution' is declared but its value is never read.
+src/data/puzzles/index.ts(7,40): error TS6133: 'getDifficultyFromId' is declared but its value is never read.

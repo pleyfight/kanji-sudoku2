@@ -1,18 +1,22 @@
-// Game State Management - Timer, Score, Difficulty, and Language
+// Game State Management - Now with Pre-designed Puzzles
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { NumericBoard, GameBoard } from './boardGenerator';
-import { generateGameBoard, validateBoard, findFormedWords } from './boardGenerator';
-import type { CompoundWord } from '../data/compoundWords';
+import {
+    getRandomPuzzle,
+    getPuzzleById
+} from '../data/puzzles';
+import type { Puzzle, Difficulty, CellData } from '../data/puzzles';
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type { Difficulty };
 export type Language = 'en' | 'ja';
 
 export interface GameState {
-    // Board state
-    gameBoard: GameBoard | null;
-    currentBoard: NumericBoard;
-    initialBoard: NumericBoard;
-    notes: number[][][];
+    // Puzzle info
+    puzzle: Puzzle | null;
+    puzzleId: number | null;
+
+    // Board state (number indices 1-9, or null for empty)
+    currentBoard: (number | null)[][];
+    notes: number[][][];  // Notes for each cell
 
     // Game progress
     difficulty: Difficulty;
@@ -24,7 +28,7 @@ export interface GameState {
 
     // Score
     score: number;
-    foundWords: { word: CompoundWord; cells: { row: number; col: number }[]; direction: 'row' | 'col' }[];
+    foundWords: { word: string; meaning: string; reading: string; cells: { row: number; col: number }[] }[];
 
     // Hints
     hintsRemaining: number;
@@ -41,6 +45,7 @@ export interface GameState {
 export interface GameActions {
     // Game control
     startNewGame: (difficulty?: Difficulty) => void;
+    loadPuzzle: (id: number) => boolean;
     togglePause: () => void;
 
     // Cell actions
@@ -66,17 +71,19 @@ const SCORE_CONFIG = {
         easy: 10,
         medium: 20,
         hard: 30,
+        expert: 50,
     },
     wordBonus: {
-        2: 50,   // 2-character word
-        3: 100,  // 3-character word
-        4: 200,  // 4+ character word
+        2: 50,
+        3: 100,
+        4: 200,
     },
     hintPenalty: 25,
     timeBonus: {
-        easy: { threshold: 300, bonus: 100 },      // Under 5 min
-        medium: { threshold: 600, bonus: 200 },    // Under 10 min
-        hard: { threshold: 900, bonus: 500 },      // Under 15 min
+        easy: { threshold: 300, bonus: 100 },
+        medium: { threshold: 600, bonus: 200 },
+        hard: { threshold: 900, bonus: 500 },
+        expert: { threshold: 1200, bonus: 1000 },
     },
 };
 
@@ -84,13 +91,19 @@ const HINTS_BY_DIFFICULTY = {
     easy: 10,
     medium: 5,
     hard: 3,
+    expert: 1,
 };
+
+// Check if a cell is editable (kanji blank, not revealed)
+function isCellEditable(cellData: CellData): boolean {
+    return !cellData.isKana && !cellData.isRevealed;
+}
 
 // Custom hook for game state
 export function useGameState(): [GameState, GameActions] {
-    const [gameBoard, setGameBoard] = useState<GameBoard | null>(null);
-    const [currentBoard, setCurrentBoard] = useState<NumericBoard>([]);
-    const [initialBoard, setInitialBoard] = useState<NumericBoard>([]);
+    const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
+    const [puzzleId, setPuzzleId] = useState<number | null>(null);
+    const [currentBoard, setCurrentBoard] = useState<(number | null)[][]>([]);
     const [notes, setNotes] = useState<number[][][]>([]);
 
     const [difficulty, setDifficultyState] = useState<Difficulty>('easy');
@@ -102,7 +115,6 @@ export function useGameState(): [GameState, GameActions] {
 
     const [score, setScore] = useState(0);
     const [foundWords, setFoundWords] = useState<GameState['foundWords']>([]);
-    const previousFoundWordsRef = useRef<Set<string>>(new Set());
 
     const [hintsRemaining, setHintsRemaining] = useState(HINTS_BY_DIFFICULTY.easy);
     const [hintsUsed, setHintsUsed] = useState(0);
@@ -113,7 +125,7 @@ export function useGameState(): [GameState, GameActions] {
 
     // Timer effect
     useEffect(() => {
-        if (!isPaused && !isComplete && gameBoard) {
+        if (!isPaused && !isComplete && puzzle) {
             timerRef.current = window.setInterval(() => {
                 setElapsedTime(prev => prev + 1);
             }, 1000);
@@ -124,54 +136,54 @@ export function useGameState(): [GameState, GameActions] {
                 clearInterval(timerRef.current);
             }
         };
-    }, [isPaused, isComplete, gameBoard]);
+    }, [isPaused, isComplete, puzzle]);
 
-    // Word detection effect
-    useEffect(() => {
-        if (!gameBoard || currentBoard.length === 0) return;
+    // Initialize a puzzle
+    const initializePuzzle = useCallback((p: Puzzle) => {
+        setPuzzle(p);
+        setPuzzleId(p.id);
+        setDifficultyState(p.difficulty);
 
-        const words = findFormedWords(currentBoard, gameBoard.kanjiSet, gameBoard.possibleWords);
-        setFoundWords(words);
-
-        // Check for new words and award bonus
-        const currentWordKeys = new Set(words.map(w => `${w.word.word}-${w.cells.map(c => `${c.row},${c.col}`).join('|')}`));
-
-        words.forEach(w => {
-            const key = `${w.word.word}-${w.cells.map(c => `${c.row},${c.col}`).join('|')}`;
-            if (!previousFoundWordsRef.current.has(key)) {
-                // New word found! Award bonus
-                const wordLen = w.word.word.length;
-                const bonus = wordLen >= 4
-                    ? SCORE_CONFIG.wordBonus[4]
-                    : SCORE_CONFIG.wordBonus[wordLen as 2 | 3] || 50;
-                setScore(prev => prev + bonus);
-            }
-        });
-
-        previousFoundWordsRef.current = currentWordKeys;
-    }, [currentBoard, gameBoard]);
-
-    // Start new game
-    const startNewGame = useCallback((diff: Difficulty = difficulty) => {
-        const newBoard = generateGameBoard({ difficulty: diff });
-
-        setGameBoard(newBoard);
-        setCurrentBoard(newBoard.puzzleBoard.map(row => [...row]));
-        setInitialBoard(newBoard.puzzleBoard.map(row => [...row]));
+        // Build current board from puzzle grid
+        // Build current board from puzzle grid
+        const board: (number | null)[][] = p.grid.map((row) =>
+            row.map((cell) => {
+                if (cell.isRevealed) {
+                    // Find index of this symbol
+                    return p.symbols.indexOf(cell.symbol) + 1;
+                }
+                return null;
+            })
+        );
+        setCurrentBoard(board);
         setNotes(Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => [])));
 
-        setDifficultyState(diff);
         setIsComplete(false);
         setIsPaused(false);
         setElapsedTime(0);
         setScore(0);
         setFoundWords([]);
-        previousFoundWordsRef.current = new Set();
-        setHintsRemaining(HINTS_BY_DIFFICULTY[diff]);
+        setHintsRemaining(HINTS_BY_DIFFICULTY[p.difficulty]);
         setHintsUsed(0);
         setSelectedCell(null);
         setIsNoteMode(false);
-    }, [difficulty]);
+    }, []);
+
+    // Load puzzle by ID
+    const loadPuzzle = useCallback((id: number): boolean => {
+        const p = getPuzzleById(id);
+        if (p) {
+            initializePuzzle(p);
+            return true;
+        }
+        return false;
+    }, [initializePuzzle]);
+
+    // Start new game (random puzzle for difficulty)
+    const startNewGame = useCallback((diff: Difficulty = difficulty) => {
+        const p = getRandomPuzzle(diff);
+        initializePuzzle(p);
+    }, [difficulty, initializePuzzle]);
 
     // Initialize on mount
     useEffect(() => {
@@ -185,16 +197,22 @@ export function useGameState(): [GameState, GameActions] {
 
     // Select cell
     const selectCell = useCallback((row: number, col: number) => {
-        setSelectedCell({ row, col });
-    }, []);
+        if (!puzzle) return;
+
+        const cellData = puzzle.grid[row][col];
+        // Only select editable cells (kanji blanks)
+        if (isCellEditable(cellData)) {
+            setSelectedCell({ row, col });
+        }
+    }, [puzzle]);
 
     // Input value
     const inputValue = useCallback((num: number) => {
-        if (!selectedCell || !gameBoard) return;
+        if (!selectedCell || !puzzle) return;
         const { row, col } = selectedCell;
 
-        // Can't edit initial cells
-        if (initialBoard[row][col] !== null) return;
+        const cellData = puzzle.grid[row][col];
+        if (!isCellEditable(cellData)) return;
 
         if (isNoteMode) {
             setNotes(prev => {
@@ -208,8 +226,9 @@ export function useGameState(): [GameState, GameActions] {
                 return newNotes;
             });
         } else {
-            const wasCorrect = currentBoard[row][col] === gameBoard.solvedBoard[row][col];
-            const isCorrect = num === gameBoard.solvedBoard[row][col];
+            const correctValue = puzzle.solution[row][col];
+            const wasCorrect = currentBoard[row][col] === correctValue;
+            const isCorrect = num === correctValue;
 
             setCurrentBoard(prev => {
                 const newBoard = prev.map(r => [...r]);
@@ -224,7 +243,7 @@ export function useGameState(): [GameState, GameActions] {
                 return newNotes;
             });
 
-            // Award points for correct placement (only if wasn't already correct)
+            // Award points for correct placement
             if (isCorrect && !wasCorrect) {
                 setScore(prev => prev + SCORE_CONFIG.correctCell[difficulty]);
             }
@@ -234,9 +253,20 @@ export function useGameState(): [GameState, GameActions] {
                 const newBoard = prev.map(r => [...r]);
                 newBoard[row][col] = num;
 
-                if (validateBoard(newBoard, gameBoard.solvedBoard)) {
+                // Check if all cells are correctly filled
+                let complete = true;
+                for (let r = 0; r < 9; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        if (newBoard[r][c] !== puzzle.solution[r][c]) {
+                            complete = false;
+                            break;
+                        }
+                    }
+                    if (!complete) break;
+                }
+
+                if (complete) {
                     setIsComplete(true);
-                    // Award time bonus
                     const timeConfig = SCORE_CONFIG.timeBonus[difficulty];
                     if (elapsedTime < timeConfig.threshold) {
                         setScore(s => s + timeConfig.bonus);
@@ -246,70 +276,81 @@ export function useGameState(): [GameState, GameActions] {
                 return newBoard;
             });
         }
-    }, [selectedCell, initialBoard, isNoteMode, gameBoard, difficulty, elapsedTime, currentBoard]);
+    }, [selectedCell, puzzle, isNoteMode, difficulty, elapsedTime, currentBoard]);
 
     // Delete value
     const deleteValue = useCallback(() => {
-        if (!selectedCell) return;
+        if (!selectedCell || !puzzle) return;
         const { row, col } = selectedCell;
 
-        if (initialBoard[row][col] !== null) return;
+        const cellData = puzzle.grid[row][col];
+        if (!isCellEditable(cellData)) return;
 
         setCurrentBoard(prev => {
             const newBoard = prev.map(r => [...r]);
             newBoard[row][col] = null;
             return newBoard;
         });
-    }, [selectedCell, initialBoard]);
+    }, [selectedCell, puzzle]);
 
     // Toggle note mode
     const toggleNoteMode = useCallback(() => {
         setIsNoteMode(prev => !prev);
     }, []);
 
-    // Request hint (meaning-based, not fill-in)
+    // Request hint
     const requestHint = useCallback((): { meaning: string; reading: string } | null => {
-        if (!selectedCell || !gameBoard || hintsRemaining <= 0) return null;
+        if (!selectedCell || !puzzle || hintsRemaining <= 0) return null;
         const { row, col } = selectedCell;
 
-        // Get the correct value for this cell
-        const correctValue = gameBoard.solvedBoard[row][col];
+        const correctValue = puzzle.solution[row][col];
         if (correctValue === null) return null;
 
-        // Get the kanji for this value
-        const kanji = gameBoard.kanjiSet[correctValue - 1];
+        const symbol = puzzle.symbols[correctValue - 1];
 
-        // Find a word that uses this kanji
-        const relatedWord = gameBoard.possibleWords.find(w => w.word.includes(kanji));
+        // Find a related word from vocabulary
+        const relatedWord = puzzle.vocabulary.find(w => w.word.includes(symbol));
 
         setHintsRemaining(prev => prev - 1);
         setHintsUsed(prev => prev + 1);
         setScore(prev => Math.max(0, prev - SCORE_CONFIG.hintPenalty));
 
         if (relatedWord) {
+            // For expert mode, never show the kanji
+            if (difficulty === 'expert') {
+                return {
+                    meaning: relatedWord.meaning,
+                    reading: '', // Hide reading too for expert
+                };
+            }
             return {
                 meaning: relatedWord.meaning,
                 reading: relatedWord.reading,
             };
         }
 
-        // Fallback: just indicate the kanji meaning
         return {
-            meaning: `Think about "${kanji}"`,
+            meaning: `Think about this symbol...`,
             reading: '',
         };
-    }, [selectedCell, gameBoard, hintsRemaining]);
+    }, [selectedCell, puzzle, hintsRemaining, difficulty]);
 
     // Check solution
     const checkSolution = useCallback((): boolean => {
-        if (!gameBoard) return false;
-        return validateBoard(currentBoard, gameBoard.solvedBoard);
-    }, [currentBoard, gameBoard]);
+        if (!puzzle) return false;
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                if (currentBoard[r][c] !== puzzle.solution[r][c]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }, [currentBoard, puzzle]);
 
     // Set language
     const setLanguageAction = useCallback((lang: Language) => {
         setLanguage(lang);
-        // Persist to localStorage
         localStorage.setItem('kanjiSudoku_language', lang);
     }, []);
 
@@ -320,9 +361,9 @@ export function useGameState(): [GameState, GameActions] {
     }, [startNewGame]);
 
     const state: GameState = {
-        gameBoard,
+        puzzle,
+        puzzleId,
         currentBoard,
-        initialBoard,
         notes,
         difficulty,
         isComplete,
@@ -339,6 +380,7 @@ export function useGameState(): [GameState, GameActions] {
 
     const actions: GameActions = {
         startNewGame,
+        loadPuzzle,
         togglePause,
         selectCell,
         inputValue,

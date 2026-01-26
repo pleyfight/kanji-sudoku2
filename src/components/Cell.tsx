@@ -1,16 +1,16 @@
-// Enhanced Cell Component with Kanji input support
+// Enhanced Cell Component - Supports kana (fixed) and kanji (editable) cells
 import React from 'react';
+import type { CellData } from '../data/puzzles';
 
 interface CellProps {
   value: number | null;
   row: number;
   col: number;
-  isInitial: boolean;
+  cellData: CellData;
   isSelected: boolean;
   isValid: boolean;
-  isPartOfWord: boolean;
   notes: number[];
-  kanjiList: string[];
+  symbols: string[];
   onClick: () => void;
   isPaused?: boolean;
 }
@@ -19,22 +19,25 @@ export const Cell: React.FC<CellProps> = ({
   value,
   row,
   col,
-  isInitial,
+  cellData,
   isSelected,
   isValid,
-  isPartOfWord,
   notes,
-  kanjiList,
+  symbols,
   onClick,
   isPaused = false,
 }) => {
   // Determine borders based on 3x3 grid
-  const borderRight = (col + 1) % 3 === 0 && col !== 8
-    ? 'border-r-2 border-r-ink'
-    : 'border-r border-r-ink/30';
-  const borderBottom = (row + 1) % 3 === 0 && row !== 8
-    ? 'border-b-2 border-b-ink'
-    : 'border-b border-b-ink/30';
+  const isRightBorder = (col + 1) % 3 === 0 && col !== 8;
+  const isBottomBorder = (row + 1) % 3 === 0 && row !== 8;
+
+  // Is this a fixed kana cell?
+  const isKana = cellData.isKana;
+  const isRevealed = cellData.isRevealed;
+  const isEditable = !isKana && !isRevealed;
+
+  // Get display symbol
+  const displaySymbol = value !== null ? symbols[value - 1] : null;
 
   // Show blur overlay when paused
   if (isPaused) {
@@ -42,57 +45,72 @@ export const Cell: React.FC<CellProps> = ({
       <div
         className={`
           relative w-full h-full aspect-square flex items-center justify-center
-          ${borderRight} ${borderBottom}
-          bg-ink/10
+          ${isRightBorder ? 'border-r-2 border-r-black/20 dark:border-r-white/20' : 'border-r border-r-black/10 dark:border-r-white/10'}
+          ${isBottomBorder ? 'border-b-2 border-b-black/20 dark:border-b-white/20' : 'border-b border-b-black/10 dark:border-b-white/10'}
         `}
+        style={{ background: 'var(--bg-glass)' }}
       >
-        <span className="text-ink/20 text-xl">?</span>
+        <span style={{ color: 'var(--text-muted)' }} className="text-xl">?</span>
       </div>
     );
   }
 
   return (
     <div
-      onClick={onClick}
+      onClick={isEditable ? onClick : undefined}
       className={`
         relative w-full h-full aspect-square flex items-center justify-center 
-        cursor-pointer select-none transition-all duration-200
-        ${borderRight} ${borderBottom}
-        ${isSelected
-          ? 'bg-indigo/20 ring-2 ring-indigo ring-inset'
-          : 'hover:bg-ink/5'}
-        ${isPartOfWord && !isSelected ? 'bg-cinnabar/10' : ''}
-        ${!isValid ? 'bg-cinnabar/20' : ''}
+        select-none transition-all duration-200
+        ${isRightBorder ? 'border-r-2 border-r-black/20 dark:border-r-white/20' : 'border-r border-r-black/10 dark:border-r-white/10'}
+        ${isBottomBorder ? 'border-b-2 border-b-black/20 dark:border-b-white/20' : 'border-b border-b-black/10 dark:border-b-white/10'}
+        ${isEditable ? 'cursor-pointer' : 'cursor-default'}
+        ${isSelected ? 'glow z-10' : isEditable ? 'hover:bg-white/30 dark:hover:bg-white/5' : ''}
       `}
+      style={{
+        background: isSelected
+          ? 'rgba(59, 130, 246, 0.15)'
+          : !isValid && value !== null
+            ? 'rgba(239, 68, 68, 0.1)'
+            : isKana
+              ? 'rgba(0, 0, 0, 0.03)'
+              : 'transparent',
+      }}
     >
-      {value !== null ? (
-        <span className={`
-          text-2xl sm:text-3xl md:text-4xl leading-none font-serif
-          transition-transform duration-200
-          ${isInitial ? 'font-bold text-ink' : 'font-normal'}
-          ${!isInitial && isValid ? 'text-indigo' : ''}
-          ${!isValid ? 'text-cinnabar animate-shake' : ''}
-        `}>
-          {kanjiList[value - 1]}
+      {displaySymbol !== null ? (
+        <span
+          className={`
+            text-2xl sm:text-3xl md:text-4xl leading-none
+            transition-all duration-200
+            ${isKana ? 'font-normal' : 'kanji-cell'}
+          `}
+          style={{
+            color: !isValid && !isRevealed
+              ? 'var(--error)'
+              : isKana
+                ? 'var(--text-muted)'  // Kana is muted
+                : isRevealed
+                  ? 'var(--text-primary)'  // Revealed kanji is primary
+                  : 'var(--accent)',  // User-entered kanji is accent
+          }}
+        >
+          {displaySymbol}
         </span>
       ) : (
+        // Empty cell - show notes
         <div className="grid grid-cols-3 gap-0 w-full h-full p-0.5">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <div key={num} className="flex items-center justify-center">
-              <span className={`
-                text-[6px] sm:text-[8px] md:text-[10px] font-sans
-                ${notes.includes(num) ? 'text-ink/70' : 'text-transparent'}
-              `}>
-                {kanjiList[num - 1]}
+              <span
+                className="text-[6px] sm:text-[8px] md:text-[10px] kanji-cell"
+                style={{
+                  color: notes.includes(num) ? 'var(--text-muted)' : 'transparent'
+                }}
+              >
+                {symbols[num - 1]}
               </span>
             </div>
           ))}
         </div>
-      )}
-
-      {/* Word highlight indicator */}
-      {isPartOfWord && value !== null && (
-        <div className="absolute top-0 right-0 w-2 h-2 bg-cinnabar rounded-bl" />
       )}
     </div>
   );
