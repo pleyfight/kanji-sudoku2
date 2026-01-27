@@ -1,8 +1,8 @@
-# 漢字数独 (Kanji Sudoku)
+# Kudoko
 
 A modern Japanese Kanji-based Sudoku puzzle game built with React, TypeScript, and Vite.
 
-![Kanji Sudoku Game](./screenshot.png)
+![Kudoko Game](./screenshot.png)
 
 ## Features
 
@@ -75,7 +75,7 @@ The game includes **150+ Japanese compound words** organized by category:
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd japanese-sudoku
+cd kudoko
 
 # Install dependencies
 npm install

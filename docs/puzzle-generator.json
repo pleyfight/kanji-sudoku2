@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "purpose": "Instructions for an AI to generate new Japanese Sudoku puzzles that integrate with this repo.",
+  "purpose": "Instructions for an AI to generate new Kudoko puzzles that integrate with this repo.",
   "sourceData": {
     "puzzleDataFolder": "src/puzzle-data",
     "fileGlob": "src/puzzle-data/*.json",

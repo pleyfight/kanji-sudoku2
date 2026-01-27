@@ -399,7 +399,7 @@ export function useGameState(): [GameState, GameActions] {
     // Set language
     const setLanguageAction = useCallback((lang: Language) => {
         setLanguage(lang);
-        localStorage.setItem('kanjiSudoku_language', lang);
+        localStorage.setItem('kudoko_language', lang);
     }, []);
 
     // Set difficulty

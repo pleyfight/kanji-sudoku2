@@ -13,7 +13,7 @@ import { useGameState, type Difficulty } from './lib/gameState';
 // Localized labels
 const LABELS = {
   en: {
-    title: 'Kanji Sudoku',
+    title: 'Kudoko',
     easy: 'Easy',
     medium: 'Medium',
     hard: 'Hard',

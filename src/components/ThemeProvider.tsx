@@ -11,7 +11,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'kanjiSudoku_theme';
+const STORAGE_KEY = 'kudoko_theme';
 
 // Check if we should use dark mode based on current time
 function shouldUseDarkByTime(): boolean {

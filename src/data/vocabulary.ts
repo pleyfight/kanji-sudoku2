@@ -1,5 +1,5 @@
 // Vocabulary Database - Types and Core Structure
-// This file defines the vocabulary system for Kanji Sudoku
+// This file defines the vocabulary system for Kudoko
 
 export interface Word {
   kanji: string;      // Kanji form

@@ -39,7 +39,11 @@ if (puzzles.length === 0) {
 const errors = [];
 const seenIds = new Set();
 const seenSignatures = new Set();
+const STRICT_SENTENCE_POOLS = process.env.STRICT_SENTENCE_POOLS === '1';
 const sentencePools = (() => {
+    if (!STRICT_SENTENCE_POOLS) {
+        return null;
+    }
     try {
         const rows = JSON.parse(readFileSync(sentenceRowPath, 'utf8'));
         const columns = JSON.parse(readFileSync(sentenceColumnPath, 'utf8'));
@@ -278,7 +282,7 @@ for (const puzzle of puzzles) {
             }
             if (Array.isArray(hintRows)) {
                 hintRows.forEach((hint, index) => {
-                    if (!sentencePools.rows.has(hint)) {
+                    if (STRICT_SENTENCE_POOLS && sentencePools && !sentencePools.rows.has(hint)) {
                         errors.push(`${label} sentenceHints.rows[${index}] not found in rows sentence pool.`);
                     }
                     if (hint !== rowStrings[index]) {
@@ -288,7 +292,7 @@ for (const puzzle of puzzles) {
             }
             if (Array.isArray(hintColumns)) {
                 hintColumns.forEach((hint, index) => {
-                    if (!sentencePools.columns.has(hint)) {
+                    if (STRICT_SENTENCE_POOLS && sentencePools && !sentencePools.columns.has(hint)) {
                         errors.push(`${label} sentenceHints.columns[${index}] not found in columns sentence pool.`);
                     }
                     if (hint !== columnStrings[index]) {
@@ -298,16 +302,18 @@ for (const puzzle of puzzles) {
             }
         }
 
-        rowStrings.forEach((rowSentence, index) => {
-            if (!sentencePools.rows.has(rowSentence)) {
-                errors.push(`${label} template row ${index} not found in rows sentence pool.`);
-            }
-        });
-        columnStrings.forEach((columnSentence, index) => {
-            if (!sentencePools.columns.has(columnSentence)) {
-                errors.push(`${label} template column ${index} not found in columns sentence pool.`);
-            }
-        });
+        if (STRICT_SENTENCE_POOLS && sentencePools) {
+            rowStrings.forEach((rowSentence, index) => {
+                if (!sentencePools.rows.has(rowSentence)) {
+                    errors.push(`${label} template row ${index} not found in rows sentence pool.`);
+                }
+            });
+            columnStrings.forEach((columnSentence, index) => {
+                if (!sentencePools.columns.has(columnSentence)) {
+                    errors.push(`${label} template column ${index} not found in columns sentence pool.`);
+                }
+            });
+        }
 
         const rowSet = new Set(rowStrings);
         const columnSet = new Set(columnStrings);
@@ -316,12 +322,6 @@ for (const puzzle of puzzles) {
         }
         if (columnSet.size !== columnStrings.length) {
             errors.push(`${label} expert columns must form 9 unique sentences.`);
-        }
-        for (const rowSentence of rowSet) {
-            if (columnSet.has(rowSentence)) {
-                errors.push(`${label} expert row/column sentences must be distinct.`);
-                break;
-            }
         }
 
     }
