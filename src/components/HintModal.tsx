@@ -78,7 +78,7 @@ export const HintModal: React.FC<HintModalProps> = ({
                         </span>
                         <p
                             className="text-lg font-medium"
-                            style={{ color: 'var(--text-primary)' }}
+                            style={{ color: 'var(--text-primary)', whiteSpace: 'pre-line' }}
                         >
                             {hint.meaning}
                         </p>

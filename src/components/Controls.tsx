@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 interface ControlsProps {
   kanjiList: string[];
   onInput: (num: number) => void;
+  onInputSymbol?: (symbol: string) => void;
   onDelete: () => void;
   onNoteToggle: () => void;
   onHint: () => void;
@@ -11,11 +12,14 @@ interface ControlsProps {
   difficulty: 'easy' | 'medium' | 'hard' | 'expert';
   hintsRemaining: number;
   language: 'en' | 'ja';
+  expertSlots?: string[];
+  slotsRemaining?: number;
 }
 
 export const Controls: React.FC<ControlsProps> = ({
   kanjiList,
   onInput,
+  onInputSymbol,
   onDelete,
   onNoteToggle,
   onHint,
@@ -23,6 +27,8 @@ export const Controls: React.FC<ControlsProps> = ({
   difficulty,
   hintsRemaining,
   language,
+  expertSlots = [],
+  slotsRemaining,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -32,21 +38,37 @@ export const Controls: React.FC<ControlsProps> = ({
       noteMode: 'Notes',
       hint: 'Hint',
       inputPlaceholder: 'Type kanji...',
+      slots: 'Slots',
+      slotsRemaining: 'Slots remaining',
     },
     ja: {
       noteMode: 'メモ',
       hint: 'ヒント',
       inputPlaceholder: '漢字を入力...',
+      slots: 'スロット',
+      slotsRemaining: '残りスロット',
     },
   };
 
-  // Handle keyboard input for hard mode
+  const isLikelyKanji = (char: string) => {
+    const code = char.codePointAt(0);
+    return code !== undefined && code >= 0x4e00 && code <= 0x9fff;
+  };
+
+  // Handle keyboard input for expert mode
   const handleKeyInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
 
     if (value) {
       const lastChar = value[value.length - 1];
+      if (difficulty === 'expert') {
+        if (isLikelyKanji(lastChar)) {
+          onInputSymbol?.(lastChar);
+          setInputValue('');
+        }
+        return;
+      }
       const index = kanjiList.indexOf(lastChar);
       if (index !== -1) {
         onInput(index + 1);
@@ -58,7 +80,7 @@ export const Controls: React.FC<ControlsProps> = ({
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.altKey) {
+      if (difficulty !== 'expert' && e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.altKey) {
         const num = parseInt(e.key);
         onInput(num);
         e.preventDefault();
@@ -69,11 +91,11 @@ export const Controls: React.FC<ControlsProps> = ({
           e.preventDefault();
         }
       }
-      if (e.key === 'n' || e.key === 'N') {
+      if (difficulty !== 'expert' && (e.key === 'n' || e.key === 'N')) {
         onNoteToggle();
         e.preventDefault();
       }
-      if (e.key === 'h' || e.key === 'H') {
+      if (difficulty !== 'expert' && (e.key === 'h' || e.key === 'H')) {
         onHint();
         e.preventDefault();
       }
@@ -81,13 +103,14 @@ export const Controls: React.FC<ControlsProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onInput, onDelete, onNoteToggle, onHint]);
+  }, [onInput, onInputSymbol, onDelete, onNoteToggle, onHint, difficulty]);
 
-  const showKeyboardInput = difficulty === 'hard';
+  const showKeyboardInput = difficulty === 'expert';
+  const showKanjiGrid = difficulty !== 'expert';
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
-      {/* Keyboard input for hard mode */}
+      {/* Keyboard input for expert mode */}
       {showKeyboardInput && (
         <div className="mb-2">
           <input
@@ -108,49 +131,86 @@ export const Controls: React.FC<ControlsProps> = ({
       )}
 
       {/* Kanji buttons grid */}
-      <div className="grid grid-cols-5 gap-2">
-        {kanjiList.map((kanji, index) => (
-          <button
-            key={index}
-            onClick={() => onInput(index + 1)}
-            className="
-              aspect-square flex flex-col items-center justify-center
-              glass glass-hover rounded-xl
-              transition-all hover:scale-105 hover:glow active:scale-95
-            "
-          >
-            <span
-              className="text-xl md:text-2xl kanji-cell"
-              style={{ color: 'var(--text-primary)' }}
+      {showKanjiGrid && (
+        <div className="grid grid-cols-5 gap-2">
+          {kanjiList.map((kanji, index) => (
+            <button
+              key={index}
+              onClick={() => onInput(index + 1)}
+              className="
+                aspect-square flex flex-col items-center justify-center
+                glass glass-hover rounded-xl
+                transition-all hover:scale-105 hover:glow active:scale-95
+              "
             >
-              {kanji}
-            </span>
-            <span
-              className="text-[10px]"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              {index + 1}
-            </span>
-          </button>
-        ))}
+              <span
+                className="text-xl md:text-2xl kanji-cell"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {kanji}
+              </span>
+              <span
+                className="text-[10px]"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {index + 1}
+              </span>
+            </button>
+          ))}
 
-        {/* Delete button */}
-        <button
-          onClick={onDelete}
-          className="
-            aspect-square flex items-center justify-center
-            glass glass-hover rounded-xl
-            transition-all hover:scale-105 active:scale-95
-          "
-          style={{ color: 'var(--error)' }}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"
-            />
-          </svg>
-        </button>
-      </div>
+          {/* Delete button */}
+          <button
+            onClick={onDelete}
+            className="
+              aspect-square flex items-center justify-center
+              glass glass-hover rounded-xl
+              transition-all hover:scale-105 active:scale-95
+            "
+            style={{ color: 'var(--error)' }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {difficulty === 'expert' && (
+        <div className="glass-subtle rounded-xl p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs uppercase tracking-wider font-medium" style={{ color: 'var(--text-muted)' }}>
+              {labels[language].slots}
+            </span>
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              {labels[language].slotsRemaining}: {slotsRemaining ?? Math.max(0, 9 - expertSlots.filter(Boolean).length)}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {expertSlots.map((slot, index) => (
+              <div
+                key={`slot-${index}`}
+                className="aspect-square rounded-lg flex flex-col items-center justify-center glass"
+              >
+                <span className="text-lg kanji-cell" style={{ color: slot ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                  {slot || '•'}
+                </span>
+                <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                  {index + 1}
+                </span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={onDelete}
+            className="mt-3 w-full py-2 rounded-xl text-sm font-medium glass glass-hover"
+            style={{ color: 'var(--error)' }}
+          >
+            Delete
+          </button>
+        </div>
+      )}
 
       {/* Control buttons row */}
       <div className="flex justify-center gap-3">

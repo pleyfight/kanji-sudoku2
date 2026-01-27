@@ -1,0 +1,209 @@
+
+> japanese-sudoku@0.0.0 prebuild
+> npm run validate:puzzles
+
+
+> japanese-sudoku@0.0.0 validate:puzzles
+> node scripts/validate-puzzles.mjs
+
+expert.json#4001 sentenceHints is missing for expert puzzle.
+expert.json#4002 sentenceHints is missing for expert puzzle.
+expert.json#4003 sentenceHints is missing for expert puzzle.
+expert.json#4004 sentenceHints is missing for expert puzzle.
+expert.json#4005 sentenceHints is missing for expert puzzle.
+expert.json#4006 sentenceHints is missing for expert puzzle.
+expert.json#4007 sentenceHints is missing for expert puzzle.
+expert.json#4008 sentenceHints is missing for expert puzzle.
+expert.json#4009 sentenceHints is missing for expert puzzle.
+expert.json#4010 sentenceHints is missing for expert puzzle.
+expert.json#4011 sentenceHints is missing for expert puzzle.
+expert.json#4012 sentenceHints is missing for expert puzzle.
+expert.json#4013 sentenceHints is missing for expert puzzle.
+expert.json#4014 sentenceHints is missing for expert puzzle.
+expert.json#4015 sentenceHints is missing for expert puzzle.
+expert.json#4016 sentenceHints is missing for expert puzzle.
+expert.json#4017 sentenceHints is missing for expert puzzle.
+expert.json#4018 sentenceHints is missing for expert puzzle.
+expert.json#4019 sentenceHints is missing for expert puzzle.
+expert.json#4020 sentenceHints is missing for expert puzzle.
+expert.json#4021 sentenceHints is missing for expert puzzle.
+expert.json#4022 sentenceHints is missing for expert puzzle.
+expert.json#4023 sentenceHints is missing for expert puzzle.
+expert.json#4024 sentenceHints is missing for expert puzzle.
+expert.json#4025 sentenceHints is missing for expert puzzle.
+expert.json#4026 sentenceHints is missing for expert puzzle.
+expert.json#4027 sentenceHints is missing for expert puzzle.
+expert.json#4028 sentenceHints is missing for expert puzzle.
+expert.json#4029 sentenceHints is missing for expert puzzle.
+expert.json#4030 sentenceHints is missing for expert puzzle.
+expert.json#4031 sentenceHints is missing for expert puzzle.
+expert.json#4032 sentenceHints is missing for expert puzzle.
+expert.json#4033 sentenceHints is missing for expert puzzle.
+expert.json#4034 sentenceHints is missing for expert puzzle.
+expert.json#4035 sentenceHints is missing for expert puzzle.
+expert.json#4036 sentenceHints is missing for expert puzzle.
+expert.json#4037 sentenceHints is missing for expert puzzle.
+expert.json#4038 sentenceHints is missing for expert puzzle.
+expert.json#4039 sentenceHints is missing for expert puzzle.
+expert.json#4040 sentenceHints is missing for expert puzzle.
+expert.json#4041 sentenceHints is missing for expert puzzle.
+expert.json#4042 sentenceHints is missing for expert puzzle.
+expert.json#4043 sentenceHints is missing for expert puzzle.
+expert.json#4044 sentenceHints is missing for expert puzzle.
+expert.json#4045 sentenceHints is missing for expert puzzle.
+expert.json#4046 sentenceHints is missing for expert puzzle.
+expert.json#4047 sentenceHints is missing for expert puzzle.
+expert.json#4048 sentenceHints is missing for expert puzzle.
+expert.json#4049 sentenceHints is missing for expert puzzle.
+expert.json#4050 sentenceHints is missing for expert puzzle.
+expert.json#4051 sentenceHints is missing for expert puzzle.
+expert.json#4052 sentenceHints is missing for expert puzzle.
+expert.json#4053 sentenceHints is missing for expert puzzle.
+expert.json#4054 sentenceHints is missing for expert puzzle.
+expert.json#4055 sentenceHints is missing for expert puzzle.
+expert.json#4056 sentenceHints is missing for expert puzzle.
+expert.json#4057 sentenceHints is missing for expert puzzle.
+expert.json#4058 sentenceHints is missing for expert puzzle.
+expert.json#4059 sentenceHints is missing for expert puzzle.
+expert.json#4060 sentenceHints is missing for expert puzzle.
+expert.json#4061 sentenceHints is missing for expert puzzle.
+expert.json#4062 sentenceHints is missing for expert puzzle.
+expert.json#4063 sentenceHints is missing for expert puzzle.
+expert.json#4064 sentenceHints is missing for expert puzzle.
+expert.json#4065 sentenceHints is missing for expert puzzle.
+expert.json#4066 sentenceHints is missing for expert puzzle.
+expert.json#4067 sentenceHints is missing for expert puzzle.
+expert.json#4068 sentenceHints is missing for expert puzzle.
+expert.json#4069 sentenceHints is missing for expert puzzle.
+expert.json#4070 sentenceHints is missing for expert puzzle.
+expert.json#4071 sentenceHints is missing for expert puzzle.
+expert.json#4072 sentenceHints is missing for expert puzzle.
+expert.json#4073 sentenceHints is missing for expert puzzle.
+expert.json#4074 sentenceHints is missing for expert puzzle.
+expert.json#4075 sentenceHints is missing for expert puzzle.
+expert.json#4076 sentenceHints is missing for expert puzzle.
+expert.json#4077 sentenceHints is missing for expert puzzle.
+expert.json#4078 sentenceHints is missing for expert puzzle.
+expert.json#4079 sentenceHints is missing for expert puzzle.
+expert.json#4080 sentenceHints is missing for expert puzzle.
+expert.json#4081 sentenceHints is missing for expert puzzle.
+expert.json#4082 sentenceHints is missing for expert puzzle.
+expert.json#4083 sentenceHints is missing for expert puzzle.
+expert.json#4084 sentenceHints is missing for expert puzzle.
+expert.json#4085 sentenceHints is missing for expert puzzle.
+expert.json#4086 sentenceHints is missing for expert puzzle.
+expert.json#4087 sentenceHints is missing for expert puzzle.
+expert.json#4088 sentenceHints is missing for expert puzzle.
+expert.json#4089 sentenceHints is missing for expert puzzle.
+expert.json#4090 sentenceHints is missing for expert puzzle.
+expert.json#4091 sentenceHints is missing for expert puzzle.
+expert.json#4092 sentenceHints is missing for expert puzzle.
+expert.json#4093 sentenceHints is missing for expert puzzle.
+expert.json#4094 sentenceHints is missing for expert puzzle.
+expert.json#4095 sentenceHints is missing for expert puzzle.
+expert.json#4096 sentenceHints is missing for expert puzzle.
+expert.json#4097 sentenceHints is missing for expert puzzle.
+expert.json#4098 sentenceHints is missing for expert puzzle.
+expert.json#4099 sentenceHints is missing for expert puzzle.
+expert.json#4100 sentenceHints is missing for expert puzzle.
+Puzzle validation failed:
+- expert.json#4001 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4002 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4003 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4004 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4005 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4006 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4007 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4008 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4009 expert puzzles cannot reveal kanji at row 0, col 4.
+- expert.json#4010 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4011 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4012 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4013 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4014 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4015 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4016 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4017 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4018 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4019 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4020 expert puzzles cannot reveal kanji at row 1, col 0.
+- expert.json#4021 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4022 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4023 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4024 expert puzzles cannot reveal kanji at row 1, col 4.
+- expert.json#4025 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4026 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4027 expert puzzles cannot reveal kanji at row 1, col 2.
+- expert.json#4028 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4029 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4030 expert puzzles cannot reveal kanji at row 0, col 4.
+- expert.json#4031 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4032 expert puzzles cannot reveal kanji at row 0, col 5.
+- expert.json#4033 expert puzzles cannot reveal kanji at row 0, col 7.
+- expert.json#4034 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4035 expert puzzles cannot reveal kanji at row 1, col 0.
+- expert.json#4036 expert puzzles cannot reveal kanji at row 0, col 4.
+- expert.json#4037 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4038 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4039 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4040 expert puzzles cannot reveal kanji at row 0, col 5.
+- expert.json#4041 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4042 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4043 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4044 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4045 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4046 expert puzzles cannot reveal kanji at row 0, col 4.
+- expert.json#4047 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4048 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4049 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4050 expert puzzles cannot reveal kanji at row 0, col 5.
+- expert.json#4051 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4052 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4053 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4054 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4055 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4056 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4057 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4058 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4059 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4060 expert puzzles cannot reveal kanji at row 0, col 7.
+- expert.json#4061 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4062 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4063 expert puzzles cannot reveal kanji at row 0, col 4.
+- expert.json#4064 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4065 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4066 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4067 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4068 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4069 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4070 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4071 expert puzzles cannot reveal kanji at row 0, col 5.
+- expert.json#4072 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4073 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4074 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4075 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4076 expert puzzles cannot reveal kanji at row 0, col 5.
+- expert.json#4077 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4078 expert puzzles cannot reveal kanji at row 0, col 4.
+- expert.json#4079 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4080 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4081 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4082 expert puzzles cannot reveal kanji at row 1, col 0.
+- expert.json#4083 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4084 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4085 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4086 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4087 expert puzzles cannot reveal kanji at row 0, col 7.
+- expert.json#4088 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4089 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4090 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4091 expert puzzles cannot reveal kanji at row 0, col 3.
+- expert.json#4092 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4093 expert puzzles cannot reveal kanji at row 0, col 1.
+- expert.json#4094 expert puzzles cannot reveal kanji at row 0, col 4.
+- expert.json#4095 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4096 expert puzzles cannot reveal kanji at row 0, col 2.
+- expert.json#4097 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4098 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4099 expert puzzles cannot reveal kanji at row 0, col 0.
+- expert.json#4100 expert puzzles cannot reveal kanji at row 0, col 1.

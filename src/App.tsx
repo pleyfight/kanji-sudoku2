@@ -8,6 +8,7 @@ import { ScoreBoard } from './components/ScoreBoard';
 import { WordList } from './components/WordList';
 import { HintModal } from './components/HintModal';
 import { VictoryModal } from './components/VictoryModal';
+import { FailureModal } from './components/FailureModal';
 import { useGameState, type Difficulty } from './lib/gameState';
 
 // Localized labels
@@ -60,13 +61,15 @@ function AppContent() {
       if (i !== row && board[i][col] === val) return false;
     }
 
-    const startRow = Math.floor(row / 3) * 3;
-    const startCol = Math.floor(col / 3) * 3;
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        const r = startRow + i;
-        const c = startCol + j;
-        if ((r !== row || c !== col) && board[r][c] === val) return false;
+    if (state.difficulty !== 'expert') {
+      const startRow = Math.floor(row / 3) * 3;
+      const startCol = Math.floor(col / 3) * 3;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          const r = startRow + i;
+          const c = startCol + j;
+          if ((r !== row || c !== col) && board[r][c] === val) return false;
+        }
       }
     }
 
@@ -106,11 +109,13 @@ function AppContent() {
   }
 
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
+  const displaySymbols = state.difficulty === 'expert' ? state.expertSlots : state.puzzle.symbols;
+  const slotsRemaining = 9 - state.expertSlots.filter(Boolean).length;
 
   return (
     <div className="min-h-screen flex flex-col items-center py-6 px-4">
       {/* Header - compact */}
-      <header className="mb-4 w-full max-w-4xl">
+      <header className="mb-4 w-full max-w-6xl">
         <div className="flex items-center justify-between">
           {/* Title */}
           <h1
@@ -129,10 +134,10 @@ function AppContent() {
       </header>
 
       {/* Main content - Board LEFT, Controls RIGHT */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start justify-center w-full max-w-4xl">
+      <div className="flex flex-col lg:flex-row gap-6 items-start justify-center w-full max-w-6xl">
 
         {/* LEFT SIDE: Board */}
-        <div className="flex-shrink-0 relative">
+        <div className="flex-shrink-0 relative min-w-0 w-[90vw] max-w-[420px] sm:max-w-[480px] lg:max-w-[520px] xl:max-w-[600px]">
           {/* Puzzle ID display */}
           <div className="mb-2 text-center">
             <span
@@ -141,12 +146,12 @@ function AppContent() {
             >
               {labels.puzzle} #{state.puzzleId}
             </span>
-            <span
-              className="ml-2 text-xs"
+            <div
+              className="mt-1 text-xs break-words"
               style={{ color: 'var(--text-muted)' }}
             >
               ({state.puzzle.title})
-            </span>
+            </div>
           </div>
 
           {/* Pause overlay */}
@@ -169,7 +174,7 @@ function AppContent() {
 
           {/* Board */}
           <div
-            className="glass rounded-2xl overflow-hidden grid grid-cols-9 w-[85vw] max-w-[400px] aspect-square"
+            className="glass rounded-2xl overflow-hidden grid grid-cols-9 w-full aspect-square"
             style={{ border: '2px solid var(--border-glass)' }}
           >
             {state.currentBoard.map((rowArr, rowIndex) =>
@@ -186,7 +191,7 @@ function AppContent() {
                   }
                   isValid={isCellValid(rowIndex, colIndex, val)}
                   notes={state.notes[rowIndex][colIndex]}
-                  symbols={state.puzzle!.symbols}
+                  symbols={displaySymbols}
                   onClick={() => actions.selectCell(rowIndex, colIndex)}
                   isPaused={state.isPaused}
                 />
@@ -235,19 +240,22 @@ function AppContent() {
           />
 
           {/* Word/Vocab List */}
-          <WordList
-            foundWords={state.puzzle.vocabulary.map(w => ({
-              word: { word: w.word, reading: w.reading, meaning: w.meaning },
-              cells: [],
-              direction: 'row' as const,
-            }))}
-            language={state.language}
-          />
+          {state.difficulty !== 'expert' && (
+            <WordList
+              foundWords={state.puzzle.vocabulary.map(w => ({
+                word: { word: w.word, reading: w.reading, meaning: w.meaning },
+                cells: [],
+                direction: 'row' as const,
+              }))}
+              language={state.language}
+            />
+          )}
 
           {/* Controls */}
           <Controls
             kanjiList={state.puzzle.symbols}
             onInput={actions.inputValue}
+            onInputSymbol={actions.inputSymbol}
             onDelete={actions.deleteValue}
             onNoteToggle={actions.toggleNoteMode}
             onHint={handleHintRequest}
@@ -255,6 +263,8 @@ function AppContent() {
             difficulty={state.difficulty}
             hintsRemaining={state.hintsRemaining}
             language={state.language}
+            expertSlots={state.expertSlots}
+            slotsRemaining={slotsRemaining}
           />
 
           {/* New Game & Puzzle ID */}
@@ -303,6 +313,13 @@ function AppContent() {
         elapsedTime={state.elapsedTime}
         wordsFound={state.foundWords.length}
         hintsUsed={state.hintsUsed}
+        onNewGame={() => actions.startNewGame()}
+        language={state.language}
+      />
+
+      <FailureModal
+        isOpen={state.isFailed}
+        onRetry={() => (state.puzzleId ? actions.loadPuzzle(state.puzzleId) : actions.startNewGame())}
         onNewGame={() => actions.startNewGame()}
         language={state.language}
       />

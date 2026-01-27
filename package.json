@@ -4,10 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run validate:puzzles && npm run validate:sentences",
     "dev": "vite",
+    "prebuild": "npm run validate:puzzles && npm run validate:sentences",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate:japanese": "node scripts/generate-japanese-data.mjs",
+    "generate:sentences": "node scripts/generate-sentences.mjs",
+    "validate:puzzles": "node scripts/validate-puzzles.mjs",
+    "validate:sentences": "node scripts/validate-sentences.mjs"
   },
   "dependencies": {
     "react": "^19.2.0",

@@ -1,22 +1,45 @@
 // Puzzle Index - Aggregates all puzzles and provides lookup functions
 
-import { EASY_PUZZLES } from './easyPuzzles';
-import { MEDIUM_PUZZLES } from './mediumPuzzles';
-import { HARD_PUZZLES } from './hardPuzzles';
-import { EXPERT_PUZZLES } from './expertPuzzles';
+import { loadPuzzles } from './loader';
 import { type Puzzle, type Difficulty } from './types';
 
 // All puzzles combined
-export const ALL_PUZZLES: Puzzle[] = [
-    ...EASY_PUZZLES,
-    ...MEDIUM_PUZZLES,
-    ...HARD_PUZZLES,
-    ...EXPERT_PUZZLES,
-];
+export const ALL_PUZZLES: Puzzle[] = loadPuzzles();
 
 // Puzzle map for quick lookup by ID
 const puzzleMap = new Map<number, Puzzle>();
-ALL_PUZZLES.forEach(p => puzzleMap.set(p.id, p));
+const puzzlesByDifficulty: Record<Difficulty, Puzzle[]> = {
+    easy: [],
+    medium: [],
+    hard: [],
+    expert: [],
+};
+const shuffleBags: Record<Difficulty, Puzzle[]> = {
+    easy: [],
+    medium: [],
+    hard: [],
+    expert: [],
+};
+const shuffleIndices: Record<Difficulty, number> = {
+    easy: 0,
+    medium: 0,
+    hard: 0,
+    expert: 0,
+};
+
+function shuffle<T>(items: T[]): T[] {
+    const result = items.slice();
+    for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+}
+
+ALL_PUZZLES.forEach((p) => {
+    puzzleMap.set(p.id, p);
+    puzzlesByDifficulty[p.difficulty].push(p);
+});
 
 // Get puzzle by ID
 export function getPuzzleById(id: number): Puzzle | undefined {
@@ -25,20 +48,24 @@ export function getPuzzleById(id: number): Puzzle | undefined {
 
 // Get all puzzles for a difficulty
 export function getPuzzlesByDifficulty(difficulty: Difficulty): Puzzle[] {
-    switch (difficulty) {
-        case 'easy': return EASY_PUZZLES;
-        case 'medium': return MEDIUM_PUZZLES;
-        case 'hard': return HARD_PUZZLES;
-        case 'expert': return EXPERT_PUZZLES;
-        default: return EASY_PUZZLES;
-    }
+    return puzzlesByDifficulty[difficulty] ?? puzzlesByDifficulty.easy;
 }
 
 // Get a random puzzle for a difficulty
 export function getRandomPuzzle(difficulty: Difficulty): Puzzle {
-    const puzzles = getPuzzlesByDifficulty(difficulty);
-    const index = Math.floor(Math.random() * puzzles.length);
-    return puzzles[index];
+    const pool = getPuzzlesByDifficulty(difficulty);
+    if (pool.length === 0) {
+        throw new Error(`No puzzles available for difficulty: ${difficulty}`);
+    }
+
+    if (shuffleBags[difficulty].length !== pool.length || shuffleIndices[difficulty] >= shuffleBags[difficulty].length) {
+        shuffleBags[difficulty] = shuffle(pool);
+        shuffleIndices[difficulty] = 0;
+    }
+
+    const puzzle = shuffleBags[difficulty][shuffleIndices[difficulty]];
+    shuffleIndices[difficulty] += 1;
+    return puzzle;
 }
 
 // Get puzzle count by difficulty

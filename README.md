@@ -19,10 +19,11 @@ A modern Japanese Kanji-based Sudoku puzzle game built with React, TypeScript, a
   - Bonus points for forming compound words
   - Time-based bonuses
   - Difficulty multipliers
-- **Three Difficulty Levels**:
+- **Four Difficulty Levels**:
   - **Easy**: 30 cells removed, button input only, 10 hints
   - **Medium**: 45 cells removed, 5 hints
-  - **Hard**: 55 cells removed, keyboard input enabled, 3 hints
+  - **Hard**: 55 cells removed, button input only, 3 hints
+  - **Expert**: row/column rules only, keyboard kanji input, limited slot reveals
 
 ### 💡 Hint System (Meaning-Based)
 - Hints show the **meaning** of the expected word, not the answer
@@ -36,7 +37,7 @@ A modern Japanese Kanji-based Sudoku puzzle game built with React, TypeScript, a
 
 ### ⌨️ Input Methods
 - **Button Input**: Click Kanji buttons to input values
-- **Keyboard Input** (Hard mode): Type Kanji directly using your keyboard/IME
+- **Keyboard Input** (Expert mode): Type Kanji directly using your keyboard/IME
 - **Keyboard Shortcuts**:
   - `1-9`: Input value at selected cell
   - `Delete/Backspace`: Clear selected cell

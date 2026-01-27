@@ -37,7 +37,11 @@ export const Cell: React.FC<CellProps> = ({
   const isEditable = !isKana && !isRevealed;
 
   // Get display symbol
-  const displaySymbol = value !== null ? symbols[value - 1] : null;
+  const displaySymbol = isKana
+    ? cellData.symbol
+    : value !== null
+      ? symbols[value - 1]
+      : null;
 
   // Show blur overlay when paused
   if (isPaused) {

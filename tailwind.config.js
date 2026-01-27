@@ -12,21 +12,21 @@ export default {
         sans: ['"Zen Kaku Gothic New"', '"Yu Gothic"', 'sans-serif'],
       },
       colors: {
-        // Light mode
-        'paper': '#f0f4f8',
-        'ink': '#1a1a2e',
-        'cinnabar': '#ef4444',
-        'indigo': '#3b82f6',
-        // Glass effects
-        'glass': {
-          light: 'rgba(255, 255, 255, 0.7)',
-          dark: 'rgba(30, 41, 59, 0.8)',
-        },
+        // Light/Dark mode dynamic colors
+        'paper': 'var(--bg-primary)',
+        'ink': 'var(--text-primary)',
+        'cinnabar': 'var(--error)',
+        // Re-map indigo to accent for consistency, or keep as var(--accent)
+        'indigo': 'var(--accent)',
+
+        // Glass effects - dynamic
+        'glass': 'var(--bg-glass)',
+
         // Accent colors
         'accent': {
-          DEFAULT: '#3b82f6',
-          glow: '#60a5fa',
-          success: '#22c55e',
+          DEFAULT: 'var(--accent)',
+          glow: 'var(--accent-glow)',
+          success: 'var(--success)',
         },
       },
       backdropBlur: {

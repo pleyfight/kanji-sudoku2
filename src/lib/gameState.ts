@@ -34,6 +34,10 @@ export interface GameState {
     hintsRemaining: number;
     hintsUsed: number;
 
+    // Expert mode slots
+    expertSlots: string[];
+    isFailed: boolean;
+
     // Settings
     language: Language;
     isNoteMode: boolean;
@@ -51,6 +55,7 @@ export interface GameActions {
     // Cell actions
     selectCell: (row: number, col: number) => void;
     inputValue: (num: number) => void;
+    inputSymbol: (symbol: string) => void;
     deleteValue: () => void;
     toggleNoteMode: () => void;
 
@@ -91,12 +96,31 @@ const HINTS_BY_DIFFICULTY = {
     easy: 10,
     medium: 5,
     hard: 3,
-    expert: 1,
+    expert: 10,
 };
 
 // Check if a cell is editable (kanji blank, not revealed)
 function isCellEditable(cellData: CellData): boolean {
     return !cellData.isKana && !cellData.isRevealed;
+}
+
+function buildExpertSlots(puzzle: Puzzle): string[] {
+    if (puzzle.difficulty !== 'expert') {
+        return [];
+    }
+    const slots: string[] = Array.from({ length: 9 }, () => '');
+    const used = new Set<string>();
+    let index = 0;
+    puzzle.grid.forEach((row) => {
+        row.forEach((cell) => {
+            if (cell.isRevealed && !cell.isKana && !used.has(cell.symbol) && index < slots.length) {
+                slots[index] = cell.symbol;
+                used.add(cell.symbol);
+                index += 1;
+            }
+        });
+    });
+    return slots;
 }
 
 // Custom hook for game state
@@ -119,13 +143,41 @@ export function useGameState(): [GameState, GameActions] {
     const [hintsRemaining, setHintsRemaining] = useState(HINTS_BY_DIFFICULTY.easy);
     const [hintsUsed, setHintsUsed] = useState(0);
 
+    const [expertSlots, setExpertSlots] = useState<string[]>([]);
+    const [isFailed, setIsFailed] = useState(false);
+
     const [language, setLanguage] = useState<Language>('en');
     const [isNoteMode, setIsNoteMode] = useState(false);
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
 
+    const resolveSymbol = useCallback((value: number | null, slotsOverride?: string[]) => {
+        if (!puzzle || value === null) return null;
+        const symbols = difficulty === 'expert' ? (slotsOverride ?? expertSlots) : puzzle.symbols;
+        return symbols[value - 1] ?? null;
+    }, [puzzle, difficulty, expertSlots]);
+
+    const expectedSymbolFor = useCallback((row: number, col: number) => {
+        if (!puzzle) return null;
+        return puzzle.symbols[puzzle.solution[row][col] - 1] ?? null;
+    }, [puzzle]);
+
+    const isCorrectValue = useCallback((
+        value: number | null,
+        row: number,
+        col: number,
+        slotsOverride?: string[]
+    ) => {
+        if (puzzle?.grid?.[row]?.[col]?.isKana) {
+            return true;
+        }
+        const actual = resolveSymbol(value, slotsOverride);
+        const expected = expectedSymbolFor(row, col);
+        return Boolean(actual && expected && actual === expected);
+    }, [resolveSymbol, expectedSymbolFor, puzzle]);
+
     // Timer effect
     useEffect(() => {
-        if (!isPaused && !isComplete && puzzle) {
+        if (!isPaused && !isComplete && !isFailed && puzzle) {
             timerRef.current = window.setInterval(() => {
                 setElapsedTime(prev => prev + 1);
             }, 1000);
@@ -136,7 +188,7 @@ export function useGameState(): [GameState, GameActions] {
                 clearInterval(timerRef.current);
             }
         };
-    }, [isPaused, isComplete, puzzle]);
+    }, [isPaused, isComplete, isFailed, puzzle]);
 
     // Initialize a puzzle
     const initializePuzzle = useCallback((p: Puzzle) => {
@@ -145,14 +197,23 @@ export function useGameState(): [GameState, GameActions] {
         setDifficultyState(p.difficulty);
 
         // Build current board from puzzle grid
-        // Build current board from puzzle grid
+        const slots = buildExpertSlots(p);
         const board: (number | null)[][] = p.grid.map((row) =>
             row.map((cell) => {
-                if (cell.isRevealed) {
-                    // Find index of this symbol
-                    return p.symbols.indexOf(cell.symbol) + 1;
+                if (!cell.isRevealed) {
+                    return null;
                 }
-                return null;
+                if (p.difficulty === 'expert') {
+                    if (cell.isKana) {
+                        return p.symbols.indexOf(cell.symbol) + 1;
+                    }
+                    const slotIndex = slots.indexOf(cell.symbol);
+                    if (slotIndex !== -1) {
+                        return slotIndex + 1;
+                    }
+                }
+                // Find index of this symbol
+                return p.symbols.indexOf(cell.symbol) + 1;
             })
         );
         setCurrentBoard(board);
@@ -165,6 +226,8 @@ export function useGameState(): [GameState, GameActions] {
         setFoundWords([]);
         setHintsRemaining(HINTS_BY_DIFFICULTY[p.difficulty]);
         setHintsUsed(0);
+        setExpertSlots(slots);
+        setIsFailed(false);
         setSelectedCell(null);
         setIsNoteMode(false);
     }, []);
@@ -188,7 +251,7 @@ export function useGameState(): [GameState, GameActions] {
     // Initialize on mount
     useEffect(() => {
         startNewGame();
-    }, []);
+    }, [startNewGame]);
 
     // Toggle pause
     const togglePause = useCallback(() => {
@@ -206,13 +269,13 @@ export function useGameState(): [GameState, GameActions] {
         }
     }, [puzzle]);
 
-    // Input value
-    const inputValue = useCallback((num: number) => {
-        if (!selectedCell || !puzzle) return;
-        const { row, col } = selectedCell;
-
-        const cellData = puzzle.grid[row][col];
-        if (!isCellEditable(cellData)) return;
+    const applyValue = useCallback((
+        row: number,
+        col: number,
+        num: number,
+        slotsOverride?: string[]
+    ): boolean => {
+        if (!puzzle) return false;
 
         if (isNoteMode) {
             setNotes(prev => {
@@ -225,62 +288,111 @@ export function useGameState(): [GameState, GameActions] {
                 }
                 return newNotes;
             });
-        } else {
-            const correctValue = puzzle.solution[row][col];
-            const wasCorrect = currentBoard[row][col] === correctValue;
-            const isCorrect = num === correctValue;
-
-            setCurrentBoard(prev => {
-                const newBoard = prev.map(r => [...r]);
-                newBoard[row][col] = num;
-                return newBoard;
-            });
-
-            // Clear notes for this cell
-            setNotes(prev => {
-                const newNotes = prev.map(r => r.map(c => [...c]));
-                newNotes[row][col] = [];
-                return newNotes;
-            });
-
-            // Award points for correct placement
-            if (isCorrect && !wasCorrect) {
-                setScore(prev => prev + SCORE_CONFIG.correctCell[difficulty]);
-            }
-
-            // Check completion
-            setCurrentBoard(prev => {
-                const newBoard = prev.map(r => [...r]);
-                newBoard[row][col] = num;
-
-                // Check if all cells are correctly filled
-                let complete = true;
-                for (let r = 0; r < 9; r++) {
-                    for (let c = 0; c < 9; c++) {
-                        if (newBoard[r][c] !== puzzle.solution[r][c]) {
-                            complete = false;
-                            break;
-                        }
-                    }
-                    if (!complete) break;
-                }
-
-                if (complete) {
-                    setIsComplete(true);
-                    const timeConfig = SCORE_CONFIG.timeBonus[difficulty];
-                    if (elapsedTime < timeConfig.threshold) {
-                        setScore(s => s + timeConfig.bonus);
-                    }
-                }
-
-                return newBoard;
-            });
+            return false;
         }
-    }, [selectedCell, puzzle, isNoteMode, difficulty, elapsedTime, currentBoard]);
+
+        const slots = slotsOverride ?? expertSlots;
+        const wasCorrect = isCorrectValue(currentBoard[row][col], row, col, slots);
+        const isCorrect = isCorrectValue(num, row, col, slots);
+
+        const newBoard = currentBoard.map(r => [...r]);
+        newBoard[row][col] = num;
+        setCurrentBoard(newBoard);
+
+        let complete = true;
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                if (!isCorrectValue(newBoard[r][c], r, c, slots)) {
+                    complete = false;
+                    break;
+                }
+            }
+            if (!complete) break;
+        }
+
+        if (complete) {
+            setIsComplete(true);
+            const timeConfig = SCORE_CONFIG.timeBonus[difficulty];
+            if (elapsedTime < timeConfig.threshold) {
+                setScore(s => s + timeConfig.bonus);
+            }
+        }
+
+        // Clear notes for this cell
+        setNotes(prev => {
+            const newNotes = prev.map(r => r.map(c => [...c]));
+            newNotes[row][col] = [];
+            return newNotes;
+        });
+
+        // Award points for correct placement
+        if (isCorrect && !wasCorrect) {
+            setScore(prev => prev + SCORE_CONFIG.correctCell[difficulty]);
+        }
+
+        return complete;
+    }, [puzzle, isNoteMode, expertSlots, isCorrectValue, currentBoard, difficulty, elapsedTime]);
+
+    // Input value
+    const inputValue = useCallback((num: number) => {
+        if (!selectedCell || !puzzle || isComplete || isFailed) return;
+        const { row, col } = selectedCell;
+
+        const cellData = puzzle.grid[row][col];
+        if (!isCellEditable(cellData)) return;
+
+        applyValue(row, col, num);
+    }, [selectedCell, puzzle, isComplete, isFailed, applyValue]);
+
+    const inputSymbol = useCallback((symbol: string) => {
+        if (!selectedCell || !puzzle || isComplete || isFailed || difficulty !== 'expert') return;
+        const { row, col } = selectedCell;
+
+        const cellData = puzzle.grid[row][col];
+        if (!isCellEditable(cellData)) return;
+
+        const trimmed = symbol.trim();
+        if (!trimmed) return;
+
+        let slots = expertSlots;
+        let slotIndex = slots.indexOf(trimmed);
+        if (slotIndex === -1) {
+            const emptyIndex = slots.findIndex((entry) => entry.length === 0);
+            if (emptyIndex === -1) {
+                if (!isComplete) {
+                    setIsFailed(true);
+                }
+                return;
+            }
+            slots = [...slots];
+            slots[emptyIndex] = trimmed;
+            setExpertSlots(slots);
+            slotIndex = emptyIndex;
+        }
+
+        const completed = applyValue(row, col, slotIndex + 1, slots);
+
+        if (slots.every((entry) => entry.length > 0) && !completed) {
+            const slotSet = new Set(slots);
+            const puzzleSet = new Set(puzzle.symbols);
+            let mismatch = slotSet.size !== puzzleSet.size;
+            if (!mismatch) {
+                for (const symbolItem of puzzleSet) {
+                    if (!slotSet.has(symbolItem)) {
+                        mismatch = true;
+                        break;
+                    }
+                }
+            }
+            if (mismatch) {
+                setIsFailed(true);
+            }
+        }
+    }, [selectedCell, puzzle, isComplete, isFailed, difficulty, expertSlots, applyValue]);
 
     // Delete value
     const deleteValue = useCallback(() => {
-        if (!selectedCell || !puzzle) return;
+        if (!selectedCell || !puzzle || isComplete || isFailed) return;
         const { row, col } = selectedCell;
 
         const cellData = puzzle.grid[row][col];
@@ -291,7 +403,7 @@ export function useGameState(): [GameState, GameActions] {
             newBoard[row][col] = null;
             return newBoard;
         });
-    }, [selectedCell, puzzle]);
+    }, [selectedCell, puzzle, isComplete, isFailed]);
 
     // Toggle note mode
     const toggleNoteMode = useCallback(() => {
@@ -300,8 +412,23 @@ export function useGameState(): [GameState, GameActions] {
 
     // Request hint
     const requestHint = useCallback((): { meaning: string; reading: string } | null => {
-        if (!selectedCell || !puzzle || hintsRemaining <= 0) return null;
+        if (!selectedCell || !puzzle || hintsRemaining <= 0 || isFailed) return null;
         const { row, col } = selectedCell;
+
+        if (difficulty === 'expert') {
+            const rowHint = puzzle.sentenceHints?.rows?.[row] ?? `Row ${row + 1} hint unavailable.`;
+            const columnIndex = 8 - col;
+            const colHint = puzzle.sentenceHints?.columns?.[columnIndex] ?? `Column ${columnIndex + 1} hint unavailable.`;
+
+            setHintsRemaining(prev => prev - 1);
+            setHintsUsed(prev => prev + 1);
+            setScore(prev => Math.max(0, prev - SCORE_CONFIG.hintPenalty));
+
+            return {
+                meaning: `Row ${row + 1}: ${rowHint}\nColumn ${columnIndex + 1}: ${colHint}`,
+                reading: '',
+            };
+        }
 
         const correctValue = puzzle.solution[row][col];
         if (correctValue === null) return null;
@@ -316,13 +443,6 @@ export function useGameState(): [GameState, GameActions] {
         setScore(prev => Math.max(0, prev - SCORE_CONFIG.hintPenalty));
 
         if (relatedWord) {
-            // For expert mode, never show the kanji
-            if (difficulty === 'expert') {
-                return {
-                    meaning: relatedWord.meaning,
-                    reading: '', // Hide reading too for expert
-                };
-            }
             return {
                 meaning: relatedWord.meaning,
                 reading: relatedWord.reading,
@@ -333,20 +453,20 @@ export function useGameState(): [GameState, GameActions] {
             meaning: `Think about this symbol...`,
             reading: '',
         };
-    }, [selectedCell, puzzle, hintsRemaining, difficulty]);
+    }, [selectedCell, puzzle, hintsRemaining, difficulty, isFailed]);
 
     // Check solution
     const checkSolution = useCallback((): boolean => {
         if (!puzzle) return false;
         for (let r = 0; r < 9; r++) {
             for (let c = 0; c < 9; c++) {
-                if (currentBoard[r][c] !== puzzle.solution[r][c]) {
+                if (!isCorrectValue(currentBoard[r][c], r, c)) {
                     return false;
                 }
             }
         }
         return true;
-    }, [currentBoard, puzzle]);
+    }, [currentBoard, puzzle, isCorrectValue]);
 
     // Set language
     const setLanguageAction = useCallback((lang: Language) => {
@@ -373,6 +493,8 @@ export function useGameState(): [GameState, GameActions] {
         foundWords,
         hintsRemaining,
         hintsUsed,
+        expertSlots,
+        isFailed,
         language,
         isNoteMode,
         selectedCell,
@@ -384,6 +506,7 @@ export function useGameState(): [GameState, GameActions] {
         togglePause,
         selectCell,
         inputValue,
+        inputSymbol,
         deleteValue,
         toggleNoteMode,
         requestHint,

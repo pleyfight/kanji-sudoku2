@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Japanese Sudoku Puzzle Data",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/puzzle"
+  },
+  "$defs": {
+    "word": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "word",
+        "reading",
+        "meaning",
+        "jlpt"
+      ],
+      "properties": {
+        "word": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reading": {
+          "type": "string",
+          "minLength": 0
+        },
+        "meaning": {
+          "type": "string",
+          "minLength": 1
+        },
+        "jlpt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      }
+    },
+    "gridRow": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 9
+      },
+      "minItems": 9,
+      "maxItems": 9
+    },
+    "puzzle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "difficulty",
+        "title",
+        "symbols",
+        "template",
+        "revealed",
+        "solution",
+        "vocabulary"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": [
+            "easy",
+            "medium",
+            "hard",
+            "expert"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "template": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 9,
+            "maxLength": 9
+          },
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "revealed": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "boolean"
+            },
+            "minItems": 9,
+            "maxItems": 9
+          },
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "solution": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gridRow"
+          },
+          "minItems": 9,
+          "maxItems": 9
+        },
+        "vocabulary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/word"
+          }
+        },
+        "sentenceHints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rows",
+            "columns"
+          ],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 9,
+              "maxItems": 9
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 9,
+              "maxItems": 9
+            }
+          }
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

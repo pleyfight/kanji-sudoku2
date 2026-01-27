@@ -9,6 +9,22 @@ export interface PuzzleWord {
     jlpt: number;       // JLPT level (5, 4, 3, 2, 1, 0 for archaic)
 }
 
+export interface PuzzleDefinition {
+    id: number;                    // Unique puzzle ID (1001, 2001, etc.)
+    difficulty: Difficulty;        // Difficulty level
+    title: string;                 // Puzzle theme/title
+    symbols: string[];             // 9 unique symbols for this puzzle
+    template: string[];            // 9 strings describing the solved rows
+    revealed: boolean[][];         // 9Ã—9 map of pre-filled cells
+    solution: number[][];          // 9Ã—9 solved grid (1-9 indices)
+    vocabulary: PuzzleWord[];      // Words that can be formed
+    description?: string;          // Optional description
+    sentenceHints?: {
+        rows: string[];
+        columns: string[];
+    };
+}
+
 export interface CellData {
     symbol: string;     // The character in this cell
     isKana: boolean;    // true = hiragana/katakana (fixed), false = kanji (blank to fill)
@@ -24,14 +40,18 @@ export interface Puzzle {
     solution: number[][];          // 9×9 solved grid (1-9 indices)
     vocabulary: PuzzleWord[];      // Words that can be formed
     description?: string;          // Optional description
+    sentenceHints?: {
+        rows: string[];
+        columns: string[];
+    };
 }
 
 // Puzzle ID ranges by difficulty
 export const PUZZLE_ID_RANGES = {
-    easy: { min: 1001, max: 1999 },
-    medium: { min: 2001, max: 2999 },
-    hard: { min: 3001, max: 3999 },
-    expert: { min: 4001, max: 4999 },
+    easy: { min: 1001, max: 11000 },
+    medium: { min: 11001, max: 21000 },
+    hard: { min: 21001, max: 31000 },
+    expert: { min: 31001, max: 41000 },
 };
 
 // Helper to check if a character is kana
