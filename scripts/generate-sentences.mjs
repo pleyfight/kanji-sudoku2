@@ -1,18 +1,23 @@
-﻿import { writeFileSync } from 'node:fs';
+﻿import { createReadStream, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { createInterface } from 'node:readline';
+import { gzipSync } from 'node:zlib';
 
+const SOURCE_DIR = join(process.cwd(), 'data', 'jesc');
 const OUTPUT_DIR = join(process.cwd(), 'src', 'data', 'sentences');
+const PUBLIC_DIR = join(process.cwd(), 'public', 'data', 'sentences');
 const ROW_FILE = join(OUTPUT_DIR, 'rows.json');
 const COLUMN_FILE = join(OUTPUT_DIR, 'columns.json');
+const ROW_GZ_FILE = join(PUBLIC_DIR, 'rows.json.gz');
+const COLUMN_GZ_FILE = join(PUBLIC_DIR, 'columns.json.gz');
 const TARGET = 40000;
 const SENTENCE_LENGTH = 9;
 
-const kanaRanges = {
-  hiragana: [{ start: 0x3040, end: 0x309f }],
-  katakana: [{ start: 0x30a0, end: 0x30ff }],
-};
-
-const kanjiRanges = [
+const KANA_RANGES = [
+  { start: 0x3040, end: 0x309f },
+  { start: 0x30a0, end: 0x30ff },
+];
+const KANJI_RANGES = [
   { start: 0x3400, end: 0x4dbf },
   { start: 0x4e00, end: 0x9fff },
   { start: 0xf900, end: 0xfaff },
@@ -22,95 +27,115 @@ const kanjiRanges = [
   { start: 0x2b820, end: 0x2ceaf },
   { start: 0x2ceb0, end: 0x2ebef },
 ];
+const EXTRA_JAPANESE = new Set([0x3005, 0x3007, 0x303b]); // 々, 〇, 〻
 
-function mulberry32(seed) {
-  return function rng() {
-    let t = (seed += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function isInRanges(codePoint, ranges) {
+  return ranges.some((range) => codePoint >= range.start && codePoint <= range.end);
 }
 
-function hashString(value) {
-  let hash = 2166136261;
-  for (let i = 0; i < value.length; i += 1) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
+function isJapaneseChar(char) {
+  const codePoint = char.codePointAt(0);
+  if (codePoint === undefined) return false;
+  if (EXTRA_JAPANESE.has(codePoint)) return true;
+  return isInRanges(codePoint, KANA_RANGES) || isInRanges(codePoint, KANJI_RANGES);
 }
 
-function normalizeRanges(ranges) {
-  return ranges.map((range) => ({
-    ...range,
-    size: range.end - range.start + 1,
-  }));
+function normalizeJapanese(text) {
+  return Array.from(text).filter(isJapaneseChar).join('');
 }
 
-const kanjiWeighted = normalizeRanges(kanjiRanges);
-const kanjiTotal = kanjiWeighted.reduce((sum, range) => sum + range.size, 0);
-const hiraWeighted = normalizeRanges(kanaRanges.hiragana);
-const hiraTotal = hiraWeighted.reduce((sum, range) => sum + range.size, 0);
-const kataWeighted = normalizeRanges(kanaRanges.katakana);
-const kataTotal = kataWeighted.reduce((sum, range) => sum + range.size, 0);
+function japaneseRatio(text) {
+  const chars = Array.from(text);
+  if (chars.length === 0) return 0;
+  const japaneseCount = chars.reduce((count, ch) => count + (isJapaneseChar(ch) ? 1 : 0), 0);
+  return japaneseCount / chars.length;
+}
 
-function randomFromRanges(ranges, total, rng) {
-  let roll = Math.floor(rng() * total);
-  for (const range of ranges) {
-    if (roll < range.size) {
-      return String.fromCodePoint(range.start + roll);
+function pickJapaneseField(fields) {
+  let best = '';
+  let bestScore = 0;
+  for (const field of fields) {
+    const score = japaneseRatio(field);
+    if (score > bestScore) {
+      bestScore = score;
+      best = field;
     }
-    roll -= range.size;
   }
-  const last = ranges[ranges.length - 1];
-  return String.fromCodePoint(last.end);
+  return bestScore >= 0.5 ? best : '';
 }
 
-function randomChar(rng) {
-  const roll = rng();
-  if (roll < 0.6) {
-    return randomFromRanges(kanjiWeighted, kanjiTotal, rng);
-  }
-  if (roll < 0.8) {
-    return randomFromRanges(hiraWeighted, hiraTotal, rng);
-  }
-  return randomFromRanges(kataWeighted, kataTotal, rng);
-}
-
-function buildSentence(rng) {
-  let sentence = '';
-  for (let i = 0; i < SENTENCE_LENGTH; i += 1) {
-    sentence += randomChar(rng);
-  }
-  return sentence;
-}
-
-function generateSentences(seedLabel, target, seen) {
-  const rng = mulberry32(hashString(seedLabel));
-  const sentences = [];
-  let safety = 0;
-  while (sentences.length < target) {
-    if (safety > target * 50) {
-      throw new Error(`Failed to generate ${target} unique sentences for ${seedLabel}.`);
+function findJescFile(rootDir) {
+  if (!existsSync(rootDir)) return null;
+  const stack = [rootDir];
+  while (stack.length) {
+    const current = stack.pop();
+    const entries = readdirSync(current);
+    for (const entry of entries) {
+      const fullPath = join(current, entry);
+      const stat = statSync(fullPath);
+      if (stat.isDirectory()) {
+        stack.push(fullPath);
+      } else if (/jesc/i.test(entry) && /\.(txt|tsv)$/.test(entry)) {
+        return fullPath;
+      } else if (entry === 'raw') {
+        return fullPath;
+      }
     }
-    const sentence = buildSentence(rng);
-    if (seen.has(sentence)) {
-      safety += 1;
-      continue;
-    }
-    seen.add(sentence);
-    sentences.push(sentence);
-    safety += 1;
   }
-  return sentences;
+  return null;
 }
 
-const seen = new Set();
-const rows = generateSentences('rows', TARGET, seen);
-const columns = generateSentences('columns', TARGET, seen);
+function shuffle(array) {
+  const result = array.slice();
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
-writeFileSync(ROW_FILE, `${JSON.stringify(rows, null, 2)}\n`, 'utf8');
-writeFileSync(COLUMN_FILE, `${JSON.stringify(columns, null, 2)}\n`, 'utf8');
+const jescPath = findJescFile(SOURCE_DIR);
+if (!jescPath) {
+  throw new Error('JESC source file not found. Run npm run download:jesc first.');
+}
+
+if (!existsSync(OUTPUT_DIR)) {
+  mkdirSync(OUTPUT_DIR, { recursive: true });
+}
+if (!existsSync(PUBLIC_DIR)) {
+  mkdirSync(PUBLIC_DIR, { recursive: true });
+}
+
+const sentenceSet = new Set();
+const reader = createInterface({
+  input: createReadStream(jescPath, { encoding: 'utf8' }),
+  crlfDelay: Infinity,
+});
+
+for await (const line of reader) {
+  if (!line) continue;
+  const fields = line.split('\t');
+  const japanese = pickJapaneseField(fields);
+  if (!japanese) continue;
+  const normalized = normalizeJapanese(japanese);
+  if (normalized.length !== SENTENCE_LENGTH) continue;
+  sentenceSet.add(normalized);
+}
+
+const allSentences = shuffle(Array.from(sentenceSet));
+const needed = TARGET * 2;
+if (allSentences.length < needed) {
+  throw new Error(`Only found ${allSentences.length} unique 9-char sentences; need ${needed}.`);
+}
+
+const rows = allSentences.slice(0, TARGET);
+const columns = allSentences.slice(TARGET, needed);
+
+const rowsJson = `${JSON.stringify(rows, null, 2)}\n`;
+const columnsJson = `${JSON.stringify(columns, null, 2)}\n`;
+writeFileSync(ROW_FILE, rowsJson, 'utf8');
+writeFileSync(COLUMN_FILE, columnsJson, 'utf8');
+writeFileSync(ROW_GZ_FILE, gzipSync(rowsJson));
+writeFileSync(COLUMN_GZ_FILE, gzipSync(columnsJson));
 
 console.log(`Generated ${rows.length} row sentences and ${columns.length} column sentences.`);

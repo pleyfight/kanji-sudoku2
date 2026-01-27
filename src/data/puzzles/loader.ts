@@ -13,7 +13,9 @@ let cachedPuzzles: Puzzle[] | null = null;
 function toPuzzle(definition: PuzzleDefinition): Puzzle {
     const grid = definition.template.map((row, r) => {
         const chars = Array.from(row);
-        return chars.map((char, c) => createCell(char, Boolean(definition.revealed?.[r]?.[c])));
+        return chars.map((char, c) => createCell(char, Boolean(definition.revealed?.[r]?.[c]), {
+            treatKanaAsEditable: definition.difficulty === 'expert',
+        }));
     });
 
     return {

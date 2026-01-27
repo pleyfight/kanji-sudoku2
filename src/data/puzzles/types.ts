@@ -13,10 +13,10 @@ export interface PuzzleDefinition {
     id: number;                    // Unique puzzle ID (1001, 2001, etc.)
     difficulty: Difficulty;        // Difficulty level
     title: string;                 // Puzzle theme/title
-    symbols: string[];             // 9 unique symbols for this puzzle
+    symbols: string[];             // Unique symbols for this puzzle (non-expert uses 9)
     template: string[];            // 9 strings describing the solved rows
     revealed: boolean[][];         // 9Ã—9 map of pre-filled cells
-    solution: number[][];          // 9Ã—9 solved grid (1-9 indices)
+    solution: number[][];          // 9Ã—9 solved grid (indices into symbols)
     vocabulary: PuzzleWord[];      // Words that can be formed
     description?: string;          // Optional description
     sentenceHints?: {
@@ -35,9 +35,9 @@ export interface Puzzle {
     id: number;                    // Unique puzzle ID (1001, 2001, etc.)
     difficulty: Difficulty;        // Difficulty level
     title: string;                 // Puzzle theme/title
-    symbols: string[];             // 9 unique symbols for this puzzle
+    symbols: string[];             // Unique symbols for this puzzle (non-expert uses 9)
     grid: CellData[][];            // 9×9 grid with cell data
-    solution: number[][];          // 9×9 solved grid (1-9 indices)
+    solution: number[][];          // 9×9 solved grid (indices into symbols)
     vocabulary: PuzzleWord[];      // Words that can be formed
     description?: string;          // Optional description
     sentenceHints?: {
@@ -56,16 +56,21 @@ export const PUZZLE_ID_RANGES = {
 
 // Helper to check if a character is kana
 export function isKana(char: string): boolean {
-    const code = char.charCodeAt(0);
+    const code = char.codePointAt(0);
+    if (code === undefined) return false;
     // Hiragana: 3040-309F, Katakana: 30A0-30FF
     return (code >= 0x3040 && code <= 0x309F) || (code >= 0x30A0 && code <= 0x30FF);
 }
 
 // Helper to create a cell
-export function createCell(symbol: string, isRevealed: boolean): CellData {
+export function createCell(
+    symbol: string,
+    isRevealed: boolean,
+    options?: { treatKanaAsEditable?: boolean }
+): CellData {
     return {
         symbol,
-        isKana: isKana(symbol),
+        isKana: options?.treatKanaAsEditable ? false : isKana(symbol),
         isRevealed,
     };
 }

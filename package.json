@@ -10,8 +10,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "download:jesc": "node scripts/download-jesc.mjs",
     "generate:japanese": "node scripts/generate-japanese-data.mjs",
     "generate:sentences": "node scripts/generate-sentences.mjs",
+    "package:pools": "node scripts/package-pools.mjs",
+    "download:pools": "node scripts/download-pools.mjs",
     "validate:puzzles": "node scripts/validate-puzzles.mjs",
     "validate:sentences": "node scripts/validate-sentences.mjs"
   },
@@ -32,6 +35,7 @@
     "globals": "^16.5.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "tar": "^7.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"

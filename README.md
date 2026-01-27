@@ -23,7 +23,7 @@ A modern Japanese Kanji-based Sudoku puzzle game built with React, TypeScript, a
   - **Easy**: 30 cells removed, button input only, 10 hints
   - **Medium**: 45 cells removed, 5 hints
   - **Hard**: 55 cells removed, button input only, 3 hints
-  - **Expert**: row/column rules only, keyboard kanji input, limited slot reveals
+  - **Expert**: 9?9 word-square mode, keyboard input, limited reveals
 
 ### 💡 Hint System (Meaning-Based)
 - Hints show the **meaning** of the expected word, not the answer
@@ -37,7 +37,7 @@ A modern Japanese Kanji-based Sudoku puzzle game built with React, TypeScript, a
 
 ### ⌨️ Input Methods
 - **Button Input**: Click Kanji buttons to input values
-- **Keyboard Input** (Expert mode): Type Kanji directly using your keyboard/IME
+- **Keyboard Input** (Expert mode): Type Japanese characters directly using your keyboard/IME
 - **Keyboard Shortcuts**:
   - `1-9`: Input value at selected cell
   - `Delete/Backspace`: Clear selected cell
@@ -91,6 +91,19 @@ npm run build
 npm run preview  # Preview production build
 ```
 
+### Data pools (compressed)
+
+```bash
+# Package local puzzle + sentence pools into gzip files
+npm run package:pools
+
+# Download prebuilt pools from a hosted base URL
+POOL_BASE_URL=https://your-host/data npm run download:pools
+```
+
+Compressed pools are written to `public/data/puzzles/*.json.gz` and
+`public/data/sentences/*.json.gz`.
+
 ## Tech Stack
 
 - **React 19** - UI framework
@@ -138,6 +151,7 @@ src/
 2. Each column must contain all 9 unique Kanji exactly once
 3. Each 3×3 box must contain all 9 unique Kanji exactly once
 4. The same Kanji cannot appear twice in the same row, column, or box
+5. Expert mode is a word-square: rows and columns are full 9-character sentences (Sudoku uniqueness rules do not apply).
 
 ## Scoring
 

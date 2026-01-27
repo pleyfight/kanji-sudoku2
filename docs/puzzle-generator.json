@@ -9,8 +9,8 @@
   "generationRules": {
     "gridSize": 9,
     "symbolsPerPuzzle": 9,
-    "rowColumnUniqueness": "Each row and column must contain the 9 symbols exactly once.",
-    "subgridUniqueness": "For easy/medium/hard, each 3x3 box must contain the 9 symbols exactly once. Expert puzzles do not require 3x3 box uniqueness.",
+    "rowColumnUniqueness": "Each row and column must contain the 9 symbols exactly once (easy/medium/hard only).",
+    "subgridUniqueness": "For easy/medium/hard, each 3x3 box must contain the 9 symbols exactly once.",
     "kanaHandling": {
       "allowed": true,
       "mustBeRevealed": true,
@@ -22,7 +22,8 @@
       "rowDirection": "left-to-right",
       "columnDirection": "top-to-bottom, read columns from right to left",
       "uniqueSentences": "All 18 sentences (9 rows + 9 columns) must be unique and no row sentence can match any column sentence.",
-      "sentenceHints": "Provide sentenceHints.rows and sentenceHints.columns arrays (9 strings each) that describe the row/column sentences without revealing kanji. Use the sentence pools in src/data/sentences/rows.json and src/data/sentences/columns.json for these hints."
+      "sentenceHints": "sentenceHints.rows and sentenceHints.columns must match the actual row/column strings. Use src/data/sentences/rows.json and src/data/sentences/columns.json.",
+      "expertRule": "Expert mode is a 9x9 word-square: rows and columns are linguistically valid sentences; Sudoku uniqueness rules do not apply."
     },
     "difficultyIdRanges": {
       "easy": {
@@ -43,7 +44,7 @@
       }
     },
     "vocabularyGuidance": "Include entries relevant to the symbols and theme; prefer covering all symbols across the vocabulary list.",
-    "expertRevealPolicy": "Expert puzzles should reveal a small number of non-kana cells (one per unique symbol) to seed the slot mapping. Keep it limited (e.g., 3 unique symbols); kana must still be revealed."
+    "expertRevealPolicy": "Expert puzzles should reveal a small number of random cells to seed the word-square. Keep it limited (e.g., 9 cells)."
   },
   "uniqueness": {
     "compareAgainst": "all puzzles in sourceData",

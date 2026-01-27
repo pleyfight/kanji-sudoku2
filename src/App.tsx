@@ -8,7 +8,6 @@ import { ScoreBoard } from './components/ScoreBoard';
 import { WordList } from './components/WordList';
 import { HintModal } from './components/HintModal';
 import { VictoryModal } from './components/VictoryModal';
-import { FailureModal } from './components/FailureModal';
 import { useGameState, type Difficulty } from './lib/gameState';
 
 // Localized labels
@@ -50,6 +49,7 @@ function AppContent() {
   // Check if a cell value is valid according to Sudoku rules
   const isCellValid = (row: number, col: number, val: number | null): boolean => {
     if (val === null) return true;
+    if (state.difficulty === 'expert') return true;
 
     const board = state.currentBoard;
 
@@ -109,8 +109,7 @@ function AppContent() {
   }
 
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
-  const displaySymbols = state.difficulty === 'expert' ? state.expertSlots : state.puzzle.symbols;
-  const slotsRemaining = 9 - state.expertSlots.filter(Boolean).length;
+  const displaySymbols = state.puzzle.symbols;
 
   return (
     <div className="min-h-screen flex flex-col items-center py-6 px-4">
@@ -263,8 +262,6 @@ function AppContent() {
             difficulty={state.difficulty}
             hintsRemaining={state.hintsRemaining}
             language={state.language}
-            expertSlots={state.expertSlots}
-            slotsRemaining={slotsRemaining}
           />
 
           {/* New Game & Puzzle ID */}
@@ -317,12 +314,6 @@ function AppContent() {
         language={state.language}
       />
 
-      <FailureModal
-        isOpen={state.isFailed}
-        onRetry={() => (state.puzzleId ? actions.loadPuzzle(state.puzzleId) : actions.startNewGame())}
-        onNewGame={() => actions.startNewGame()}
-        language={state.language}
-      />
     </div>
   );
 }

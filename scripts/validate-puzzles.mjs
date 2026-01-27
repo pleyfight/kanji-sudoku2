@@ -90,8 +90,10 @@ for (const puzzle of puzzles) {
     if (!Array.isArray(symbols)) {
         errors.push(`${label} symbols is missing or not an array.`);
     } else {
-        if (symbols.length !== 9) {
-            errors.push(`${label} symbols length ${symbols.length}, expected 9.`);
+        const expectedMin = puzzle.difficulty === 'expert' ? 1 : 9;
+        const expectedMax = puzzle.difficulty === 'expert' ? 81 : 9;
+        if (symbols.length < expectedMin || symbols.length > expectedMax) {
+            errors.push(`${label} symbols length ${symbols.length}, expected ${expectedMin}-${expectedMax}.`);
         }
         if (symbolSet.size !== symbols.length) {
             errors.push(`${label} symbols contain duplicates.`);
@@ -134,7 +136,7 @@ for (const puzzle of puzzles) {
         if (row.some((symbol) => !symbolSet.has(symbol))) {
             errors.push(`${label} row ${r} contains symbols not in the symbol list.`);
         }
-        if (new Set(row).size !== 9) {
+        if (puzzle.difficulty !== 'expert' && new Set(row).size !== 9) {
             errors.push(`${label} row ${r} has duplicate symbols.`);
         }
     }
@@ -148,7 +150,7 @@ for (const puzzle of puzzles) {
         if (column.some((symbol) => !symbolSet.has(symbol))) {
             errors.push(`${label} column ${c} contains symbols not in the symbol list.`);
         }
-        if (new Set(column).size !== 9) {
+        if (puzzle.difficulty !== 'expert' && new Set(column).size !== 9) {
             errors.push(`${label} column ${c} has duplicate symbols.`);
         }
     }
@@ -176,7 +178,7 @@ for (const puzzle of puzzles) {
                     errors.push(`${label} revealed value at row ${r}, col ${c} is not boolean.`);
                     continue;
                 }
-                if (symbol && isKana(symbol) && !revealed[r][c]) {
+                if (puzzle.difficulty !== 'expert' && symbol && isKana(symbol) && !revealed[r][c]) {
                     errors.push(`${label} kana not revealed at row ${r}, col ${c}.`);
                 }
             }
@@ -196,7 +198,8 @@ for (const puzzle of puzzles) {
             }
             for (let c = 0; c < 9; c += 1) {
                 const value = solution[r][c];
-                if (value < 1 || value > 9) {
+                const maxValue = puzzle.difficulty === 'expert' ? symbols.length : 9;
+                if (value < 1 || value > maxValue) {
                     errors.push(`${label} solution value out of range at row ${r}, col ${c}.`);
                     continue;
                 }
@@ -260,7 +263,7 @@ for (const puzzle of puzzles) {
     if (puzzle.difficulty === 'expert') {
         const sentenceHints = puzzle.sentenceHints;
         if (!sentenceHints || typeof sentenceHints !== 'object') {
-            console.warn(`${label} sentenceHints is missing for expert puzzle.`);
+            errors.push(`${label} sentenceHints is missing for expert puzzle.`);
         } else {
             const { rows: hintRows, columns: hintColumns } = sentenceHints;
             if (!Array.isArray(hintRows) || hintRows.length !== 9) {
@@ -278,6 +281,9 @@ for (const puzzle of puzzles) {
                     if (!sentencePools.rows.has(hint)) {
                         errors.push(`${label} sentenceHints.rows[${index}] not found in rows sentence pool.`);
                     }
+                    if (hint !== rowStrings[index]) {
+                        errors.push(`${label} sentenceHints.rows[${index}] does not match template row.`);
+                    }
                 });
             }
             if (Array.isArray(hintColumns)) {
@@ -285,9 +291,23 @@ for (const puzzle of puzzles) {
                     if (!sentencePools.columns.has(hint)) {
                         errors.push(`${label} sentenceHints.columns[${index}] not found in columns sentence pool.`);
                     }
+                    if (hint !== columnStrings[index]) {
+                        errors.push(`${label} sentenceHints.columns[${index}] does not match template column.`);
+                    }
                 });
             }
         }
+
+        rowStrings.forEach((rowSentence, index) => {
+            if (!sentencePools.rows.has(rowSentence)) {
+                errors.push(`${label} template row ${index} not found in rows sentence pool.`);
+            }
+        });
+        columnStrings.forEach((columnSentence, index) => {
+            if (!sentencePools.columns.has(columnSentence)) {
+                errors.push(`${label} template column ${index} not found in columns sentence pool.`);
+            }
+        });
 
         const rowSet = new Set(rowStrings);
         const columnSet = new Set(columnStrings);

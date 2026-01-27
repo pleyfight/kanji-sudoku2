@@ -21,6 +21,7 @@ const KANJI_RANGES = [
   { start: 0x2b820, end: 0x2ceaf },
   { start: 0x2ceb0, end: 0x2ebef },
 ];
+const EXTRA_JAPANESE = new Set([0x3005, 0x3007, 0x303b]); // 々, 〇, 〻
 
 function isInRanges(codePoint, ranges) {
   return ranges.some((range) => codePoint >= range.start && codePoint <= range.end);
@@ -29,6 +30,7 @@ function isInRanges(codePoint, ranges) {
 function isJapaneseChar(char) {
   const codePoint = char.codePointAt(0);
   if (codePoint === undefined) return false;
+  if (EXTRA_JAPANESE.has(codePoint)) return true;
   return isInRanges(codePoint, KANA_RANGES) || isInRanges(codePoint, KANJI_RANGES);
 }
 

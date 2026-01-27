@@ -1,4 +1,4 @@
-// Controls Component with Liquid Glass styling
+﻿// Controls Component with Liquid Glass styling
 import React, { useState, useRef, useEffect } from 'react';
 
 interface ControlsProps {
@@ -12,8 +12,6 @@ interface ControlsProps {
   difficulty: 'easy' | 'medium' | 'hard' | 'expert';
   hintsRemaining: number;
   language: 'en' | 'ja';
-  expertSlots?: string[];
-  slotsRemaining?: number;
 }
 
 export const Controls: React.FC<ControlsProps> = ({
@@ -27,8 +25,6 @@ export const Controls: React.FC<ControlsProps> = ({
   difficulty,
   hintsRemaining,
   language,
-  expertSlots = [],
-  slotsRemaining,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,21 +34,28 @@ export const Controls: React.FC<ControlsProps> = ({
       noteMode: 'Notes',
       hint: 'Hint',
       inputPlaceholder: 'Type kanji...',
-      slots: 'Slots',
-      slotsRemaining: 'Slots remaining',
     },
     ja: {
-      noteMode: 'メモ',
-      hint: 'ヒント',
-      inputPlaceholder: '漢字を入力...',
-      slots: 'スロット',
-      slotsRemaining: '残りスロット',
+      noteMode: 'ãƒ¡ãƒ¢',
+      hint: 'ãƒ’ãƒ³ãƒˆ',
+      inputPlaceholder: 'æ¼¢å­—ã‚’å…¥åŠ›...',
     },
   };
 
-  const isLikelyKanji = (char: string) => {
+  const isJapaneseChar = (char: string) => {
     const code = char.codePointAt(0);
-    return code !== undefined && code >= 0x4e00 && code <= 0x9fff;
+    if (code === undefined) return false;
+    if ([0x3005, 0x3007, 0x303b].includes(code)) return true; // 々, 〇, 〻
+    if ((code >= 0x3040 && code <= 0x309f) || (code >= 0x30a0 && code <= 0x30ff)) {
+      return true;
+    }
+    if ((code >= 0x3400 && code <= 0x4dbf) || (code >= 0x4e00 && code <= 0x9fff)) {
+      return true;
+    }
+    if ((code >= 0xf900 && code <= 0xfaff) || (code >= 0x20000 && code <= 0x2ebef)) {
+      return true;
+    }
+    return false;
   };
 
   // Handle keyboard input for expert mode
@@ -63,7 +66,7 @@ export const Controls: React.FC<ControlsProps> = ({
     if (value) {
       const lastChar = value[value.length - 1];
       if (difficulty === 'expert') {
-        if (isLikelyKanji(lastChar)) {
+        if (isJapaneseChar(lastChar)) {
           onInputSymbol?.(lastChar);
           setInputValue('');
         }
@@ -95,7 +98,7 @@ export const Controls: React.FC<ControlsProps> = ({
         onNoteToggle();
         e.preventDefault();
       }
-      if (difficulty !== 'expert' && (e.key === 'h' || e.key === 'H')) {
+      if (e.key === 'h' || e.key === 'H') {
         onHint();
         e.preventDefault();
       }
@@ -177,61 +180,27 @@ export const Controls: React.FC<ControlsProps> = ({
         </div>
       )}
 
-      {difficulty === 'expert' && (
-        <div className="glass-subtle rounded-xl p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs uppercase tracking-wider font-medium" style={{ color: 'var(--text-muted)' }}>
-              {labels[language].slots}
-            </span>
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-              {labels[language].slotsRemaining}: {slotsRemaining ?? Math.max(0, 9 - expertSlots.filter(Boolean).length)}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {expertSlots.map((slot, index) => (
-              <div
-                key={`slot-${index}`}
-                className="aspect-square rounded-lg flex flex-col items-center justify-center glass"
-              >
-                <span className="text-lg kanji-cell" style={{ color: slot ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                  {slot || '•'}
-                </span>
-                <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                  {index + 1}
-                </span>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={onDelete}
-            className="mt-3 w-full py-2 rounded-xl text-sm font-medium glass glass-hover"
-            style={{ color: 'var(--error)' }}
-          >
-            Delete
-          </button>
-        </div>
-      )}
-
       {/* Control buttons row */}
       <div className="flex justify-center gap-3">
-        {/* Note mode toggle */}
-        <button
-          onClick={onNoteToggle}
-          className={`
-            px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2
-            ${isNoteMode
-              ? 'bg-accent text-white shadow-lg'
-              : 'glass glass-hover'}
-          `}
-          style={!isNoteMode ? { color: 'var(--text-secondary)' } : undefined}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
-          </svg>
-          <span className="text-sm">{labels[language].noteMode}</span>
-        </button>
+        {difficulty !== 'expert' && (
+          <button
+            onClick={onNoteToggle}
+            className={`
+              px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2
+              ${isNoteMode
+                ? 'bg-accent text-white shadow-lg'
+                : 'glass glass-hover'}
+            `}
+            style={!isNoteMode ? { color: 'var(--text-secondary)' } : undefined}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+            <span className="text-sm">{labels[language].noteMode}</span>
+          </button>
+        )}
 
         {/* Hint button */}
         <button
