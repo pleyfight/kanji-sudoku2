@@ -61,15 +61,13 @@ function AppContent() {
       if (i !== row && board[i][col] === val) return false;
     }
 
-    if (state.difficulty !== 'expert') {
-      const startRow = Math.floor(row / 3) * 3;
-      const startCol = Math.floor(col / 3) * 3;
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          const r = startRow + i;
-          const c = startCol + j;
-          if ((r !== row || c !== col) && board[r][c] === val) return false;
-        }
+    const startRow = Math.floor(row / 3) * 3;
+    const startCol = Math.floor(col / 3) * 3;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const r = startRow + i;
+        const c = startCol + j;
+        if ((r !== row || c !== col) && board[r][c] === val) return false;
       }
     }
 
