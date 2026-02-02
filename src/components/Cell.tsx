@@ -65,18 +65,19 @@ export const Cell: React.FC<CellProps> = ({
       className={`
         relative w-full h-full aspect-square flex items-center justify-center 
         select-none transition-all duration-200
-        ${isRightBorder ? 'border-r-2 border-r-black/20 dark:border-r-white/20' : 'border-r border-r-black/10 dark:border-r-white/10'}
-        ${isBottomBorder ? 'border-b-2 border-b-black/20 dark:border-b-white/20' : 'border-b border-b-black/10 dark:border-b-white/10'}
+        ${isRightBorder ? 'border-r-2 border-primary' : 'border-r border-primary'}
+        ${isBottomBorder ? 'border-b-2 border-primary' : 'border-b border-primary'}
         ${isEditable ? 'cursor-pointer' : 'cursor-default'}
-        ${isSelected ? 'glow z-10' : isEditable ? 'hover:bg-white/30 dark:hover:bg-white/5' : ''}
+        ${isSelected ? 'z-10 bg-accent/10' : isEditable ? 'hover:bg-black/5 dark:hover:bg-white/10' : ''}
       `}
       style={{
-        background: isSelected
+        borderColor: 'var(--border-primary)',
+        backgroundColor: isSelected
           ? 'rgba(59, 130, 246, 0.15)'
           : !isValid && value !== null
-            ? 'rgba(239, 68, 68, 0.1)'
+            ? 'var(--error)'
             : isKana
-              ? 'rgba(0, 0, 0, 0.03)'
+              ? 'var(--bg-secondary)'
               : 'transparent',
       }}
     >

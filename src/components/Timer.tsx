@@ -21,7 +21,7 @@ export const Timer: React.FC<TimerProps> = ({
     };
 
     return (
-        <div className="flex items-center gap-3 glass rounded-2xl px-5 py-3">
+        <div className="flex items-center gap-3 glass px-5 py-3">
             <div className="flex items-center gap-2">
                 <svg
                     className="w-5 h-5"
@@ -48,12 +48,15 @@ export const Timer: React.FC<TimerProps> = ({
             <button
                 onClick={onTogglePause}
                 className={`
-          px-4 py-1.5 rounded-xl text-sm font-medium transition-all
+          px-4 py-1.5 text-sm font-medium transition-all border-2
           ${isPaused
-                        ? 'bg-accent text-white shadow-lg hover:shadow-xl'
-                        : 'glass-subtle glass-hover'}
+                        ? 'bg-black text-white dark:bg-white dark:text-black border-primary'
+                        : 'bg-primary text-secondary border-primary hover:-translate-y-0.5'}
         `}
-                style={!isPaused ? { color: 'var(--text-secondary)' } : undefined}
+                style={{
+                    borderColor: 'var(--border-primary)',
+                    color: isPaused ? 'var(--text-inverse)' : 'var(--text-primary)'
+                }}
             >
                 {isPaused ? labels[language].resume : labels[language].pause}
             </button>

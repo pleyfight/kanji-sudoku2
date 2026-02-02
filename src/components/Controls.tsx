@@ -122,11 +122,11 @@ export const Controls: React.FC<ControlsProps> = ({
             value={inputValue}
             onChange={handleKeyInput}
             placeholder={labels[language].inputPlaceholder}
-            className="w-full px-4 py-3 text-xl text-center kanji-cell glass rounded-xl
-              focus:outline-none focus:ring-2 focus:ring-accent/50"
+            className="w-full px-4 py-3 text-xl text-center kanji-cell border-2 border-primary bg-primary text-primary focus:outline-none focus:ring-0"
             style={{
+              borderColor: 'var(--border-primary)',
               color: 'var(--text-primary)',
-              background: 'var(--bg-glass)',
+              background: 'var(--bg-primary)',
             }}
             lang="ja"
           />
@@ -142,9 +142,10 @@ export const Controls: React.FC<ControlsProps> = ({
               onClick={() => onInput(index + 1)}
               className="
                 aspect-square flex flex-col items-center justify-center
-                glass glass-hover rounded-xl
-                transition-all hover:scale-105 hover:glow active:scale-95
+                border-2 border-primary bg-primary
+                transition-all hover:-translate-y-1 hover:shadow-hard active:translate-y-0
               "
+              style={{ borderColor: 'var(--border-primary)', backgroundColor: 'var(--bg-primary)' }}
             >
               <span
                 className="text-xl md:text-2xl kanji-cell"
@@ -166,10 +167,10 @@ export const Controls: React.FC<ControlsProps> = ({
             onClick={onDelete}
             className="
               aspect-square flex items-center justify-center
-              glass glass-hover rounded-xl
-              transition-all hover:scale-105 active:scale-95
+              border-2 border-primary bg-primary
+              transition-all hover:-translate-y-1 hover:shadow-hard active:translate-y-0
             "
-            style={{ color: 'var(--error)' }}
+            style={{ color: 'var(--error)', borderColor: 'var(--border-primary)', backgroundColor: 'var(--bg-primary)' }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -186,12 +187,15 @@ export const Controls: React.FC<ControlsProps> = ({
           <button
             onClick={onNoteToggle}
             className={`
-              px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2
+              px-5 py-2.5 font-medium transition-all flex items-center gap-2 border-2
               ${isNoteMode
-                ? 'bg-accent text-white shadow-lg'
-                : 'glass glass-hover'}
+                ? 'bg-black text-white dark:bg-white dark:text-black'
+                : 'bg-primary text-secondary hover:-translate-y-0.5 hover:shadow-sm'}
             `}
-            style={!isNoteMode ? { color: 'var(--text-secondary)' } : undefined}
+            style={{
+              borderColor: 'var(--border-primary)',
+              color: isNoteMode ? 'var(--text-inverse)' : 'var(--text-primary)'
+            }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -207,12 +211,15 @@ export const Controls: React.FC<ControlsProps> = ({
           onClick={onHint}
           disabled={hintsRemaining <= 0}
           className={`
-            px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2
+            px-5 py-2.5 font-medium transition-all flex items-center gap-2 border-2
             ${hintsRemaining > 0
-              ? 'glass glass-hover'
-              : 'opacity-40 cursor-not-allowed'}
+              ? 'bg-primary hover:-translate-y-0.5 hover:shadow-sm'
+              : 'bg-gray-100 opacity-50 cursor-not-allowed'}
           `}
-          style={{ color: hintsRemaining > 0 ? 'var(--text-secondary)' : 'var(--text-muted)' }}
+          style={{
+            borderColor: 'var(--border-primary)',
+            color: 'var(--text-primary)'
+          }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}

@@ -28,7 +28,7 @@ export const WordList: React.FC<WordListProps> = ({
     };
 
     return (
-        <div className="glass rounded-2xl p-4 h-[180px] flex flex-col">
+        <div className="glass p-4 h-[180px] flex flex-col">
             <h3
                 className="text-sm font-semibold uppercase tracking-wider mb-3 flex items-center gap-2 flex-shrink-0"
                 style={{ color: 'var(--success)' }}
@@ -55,7 +55,8 @@ export const WordList: React.FC<WordListProps> = ({
                         {foundWords.map((item, i) => (
                             <li
                                 key={`${item.word.word}-${i}`}
-                                className="flex items-center gap-3 p-2 rounded-xl glass-subtle"
+                                className="flex items-center gap-3 p-2 border border-primary bg-primary"
+                                style={{ borderColor: 'var(--border-primary)' }}
                             >
                                 <span
                                     className="text-lg kanji-cell"

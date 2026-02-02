@@ -5,55 +5,70 @@
 @tailwind utilities;
 
 /* Theme CSS Custom Properties */
+/* Theme CSS Custom Properties - NYT/Editorial Style */
 :root {
   /* Light mode (default) */
-  --bg-primary: #f0f4f8;
-  --bg-secondary: #e2e8f0;
-  --bg-glass: rgba(255, 255, 255, 0.7);
-  --bg-glass-hover: rgba(255, 255, 255, 0.85);
-  --text-primary: #1a1a2e;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --accent: #3b82f6;
-  --accent-glow: #60a5fa;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  /* Light gray for cards */
+  --bg-board: #ffffff;
+
+  --text-primary: #000000;
+  --text-secondary: #4b5563;
+  --text-inverse: #ffffff;
+
+  --border-primary: #000000;
+  --border-width: 2px;
+
+  /* Accents - Bold/Flat */
+  --accent: #000000;
+  /* Default interaction */
+  --accent-easy: #3b82f6;
+  /* Blue */
+  --accent-medium: #22c55e;
+  /* Green */
+  --accent-hard: #eab308;
+  /* Yellow/Gold */
+  --accent-expert: #ef4444;
+  /* Red */
+
   --error: #ef4444;
   --success: #22c55e;
-  --border-glass: rgba(255, 255, 255, 0.3);
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
 
-  /* Gradient mesh background */
-  --gradient-mesh:
-    radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(147, 51, 234, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(34, 197, 94, 0.06) 0px, transparent 50%),
-    radial-gradient(at 80% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+  /* Shadows - Hard/Flat */
+  --shadow-hard: 4px 4px 0px 0px #000000;
+  --shadow-sm: 2px 2px 0px 0px #000000;
+
+  /* Legacy mapping (to prevent immediate breakages, will refactor over time) */
+  --bg-glass: #ffffff;
+  --bg-glass-hover: #f3f4f6;
+  --border-glass: #000000;
+  --shadow-glass: var(--shadow-sm);
 }
 
 .dark {
   /* Dark mode */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-glass: rgba(30, 41, 59, 0.8);
-  --bg-glass-hover: rgba(51, 65, 85, 0.85);
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --accent: #60a5fa;
-  --accent-glow: #93c5fd;
-  --error: #f87171;
-  --success: #4ade80;
-  --border-glass: rgba(148, 163, 184, 0.2);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 25px rgba(96, 165, 250, 0.4);
+  --bg-primary: #121212;
+  --bg-secondary: #27272a;
+  --bg-board: #121212;
 
-  --gradient-mesh:
-    radial-gradient(at 40% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(147, 51, 234, 0.12) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, rgba(34, 197, 94, 0.08) 0px, transparent 50%),
-    radial-gradient(at 80% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4d8;
+  --text-inverse: #000000;
+
+  --border-primary: #ffffff;
+
+  /* Accents - Adjusted for dark mode contrast if needed */
+  --accent: #ffffff;
+
+  --shadow-hard: 4px 4px 0px 0px #ffffff;
+  --shadow-sm: 2px 2px 0px 0px #ffffff;
+
+  /* Legacy mapping */
+  --bg-glass: #121212;
+  --bg-glass-hover: #27272a;
+  --border-glass: #ffffff;
+  --shadow-glass: var(--shadow-sm);
 }
 
 /* Base styles */
@@ -61,31 +76,33 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  background-image: var(--gradient-mesh);
-  background-attachment: fixed;
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
 }
 
 /* Glass utility classes */
+/* UI Utility Classes */
 @layer components {
+
+  /* The "Card" style - formerly glass */
   .glass {
-    background: var(--bg-glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border-glass);
-    box-shadow: var(--shadow-glass);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--border-primary);
+    box-shadow: var(--shadow-sm);
+    border-radius: 0px;
+    /* Flat design often uses sharp corners or very small radius */
   }
 
+  /* Subtle card */
   .glass-subtle {
-    background: var(--bg-glass);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--border-subtle);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
   }
 
   .glass-hover:hover {
-    background: var(--bg-glass-hover);
+    transform: translate(-1px, -1px);
+    box-shadow: var(--shadow-hard);
+    transition: all 0.1s ease-out;
   }
 
   .glow {

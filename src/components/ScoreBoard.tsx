@@ -30,7 +30,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
     };
 
     return (
-        <div className="glass rounded-2xl px-5 py-3">
+        <div className="glass px-5 py-3">
             <div className="flex items-center gap-6">
                 {/* Score */}
                 <div className="flex flex-col items-center">
