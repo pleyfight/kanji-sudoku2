@@ -45,6 +45,9 @@ function AppContent() {
   const [currentHint, setCurrentHint] = useState<{ meaning: string; reading: string } | null>(null);
   const [puzzleInput, setPuzzleInput] = useState('');
   const [view, setView] = useState<'home' | 'game'>('home');
+  const [pendingPuzzleId, setPendingPuzzleId] = useState<number | null>(null);
+  const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty | null>(null);
+  const [showDifficultyConfirm, setShowDifficultyConfirm] = useState(false);
 
   const labels = LABELS[state.language];
 
@@ -85,18 +88,68 @@ function AppContent() {
     }
   };
 
-  // Handle puzzle ID input
+  // Helper: Get difficulty from puzzle ID range
+  const getDifficultyFromId = (id: number): Difficulty | null => {
+    if (id >= 1001 && id <= 11000) return 'easy';
+    if (id >= 11001 && id <= 21000) return 'medium';
+    if (id >= 21001 && id <= 31000) return 'hard';
+    if (id >= 31001 && id <= 41000) return 'expert';
+    return null;
+  };
+
+  // Handle puzzle ID input - only allow numbers, max 5 chars
+  const handlePuzzleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 5);
+    setPuzzleInput(value);
+  };
+
+  // Handle puzzle ID go button
   const handlePuzzleGo = () => {
     const id = parseInt(puzzleInput, 10);
-    if (!isNaN(id)) {
+    if (isNaN(id)) return;
+
+    const targetDifficulty = getDifficultyFromId(id);
+    if (!targetDifficulty) {
+      // Invalid puzzle ID - clear input and alert
+      setPuzzleInput('');
+      alert('Invalid puzzle ID. Valid range: 1001-41000');
+      return;
+    }
+
+    // Check if switching difficulty
+    if (targetDifficulty !== state.difficulty) {
+      setPendingPuzzleId(id);
+      setPendingDifficulty(targetDifficulty);
+      setShowDifficultyConfirm(true);
+    } else {
+      // Same difficulty, just load
       actions.loadPuzzle(id);
       setPuzzleInput('');
     }
   };
 
+  // Confirm difficulty switch
+  const handleConfirmDifficultySwitch = () => {
+    if (pendingPuzzleId && pendingDifficulty) {
+      actions.setDifficulty(pendingDifficulty);
+      actions.loadPuzzle(pendingPuzzleId);
+      setPuzzleInput('');
+    }
+    setShowDifficultyConfirm(false);
+    setPendingPuzzleId(null);
+    setPendingDifficulty(null);
+  };
+
+  // Cancel difficulty switch
+  const handleCancelDifficultySwitch = () => {
+    setShowDifficultyConfirm(false);
+    setPendingPuzzleId(null);
+    setPendingDifficulty(null);
+  };
+
   const handleDifficultySelect = (diff: Difficulty) => {
     actions.setDifficulty(diff);
-    actions.startNewGame();
+    actions.startNewGame(diff);  // Pass difficulty directly to avoid stale state
     setView('game');
   };
 
@@ -253,7 +306,7 @@ function AppContent() {
                   {/* New Game & Puzzle ID */}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => actions.startNewGame()}
+                      onClick={() => { setPuzzleInput(''); actions.startNewGame(); }}
                       className="flex-1 py-3 border-2 border-primary hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold rounded-none"
                       style={{ borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}
                     >
@@ -263,8 +316,10 @@ function AppContent() {
                     <div className="flex gap-1">
                       <input
                         type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         value={puzzleInput}
-                        onChange={(e) => setPuzzleInput(e.target.value)}
+                        onChange={handlePuzzleInputChange}
                         placeholder="#"
                         className="w-16 px-2 py-2 text-center border-2 border-primary bg-transparent text-ink font-mono font-bold rounded-none"
                         style={{ borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}
@@ -303,6 +358,43 @@ function AppContent() {
         onNewGame={() => actions.startNewGame()}
         language={state.language}
       />
+
+      {/* Difficulty Switch Confirmation Modal */}
+      {showDifficultyConfirm && pendingDifficulty && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}>
+          <div
+            className="border-2 p-6 max-w-sm mx-4 shadow-hard bg-[#f5f0eb] dark:bg-[#2a2a2a]"
+            style={{ borderColor: 'var(--border-primary)' }}
+          >
+            <h2 className="text-xl font-bold mb-4 text-center" style={{ color: 'var(--text-primary)' }}>
+              Switch Difficulty?
+            </h2>
+            <p className="mb-6 text-center" style={{ color: 'var(--text-secondary)' }}>
+              Puzzle #{pendingPuzzleId} is a <strong style={{ color: 'var(--accent)' }}>{labels[pendingDifficulty]}</strong> puzzle.
+              <br />
+              You are currently playing <strong>{labels[state.difficulty]}</strong>.
+              <br /><br />
+              Switch to {labels[pendingDifficulty]} mode?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelDifficultySwitch}
+                className="flex-1 py-3 border-2 border-primary font-bold hover:bg-black/10 transition-colors"
+                style={{ borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}
+              >
+                No
+              </button>
+              <button
+                onClick={handleConfirmDifficultySwitch}
+                className="flex-1 py-3 border-2 border-primary font-bold bg-black text-white dark:bg-white dark:text-black hover:opacity-90 transition-colors"
+                style={{ borderColor: 'var(--border-primary)' }}
+              >
+                Go
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

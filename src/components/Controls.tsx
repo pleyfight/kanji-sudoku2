@@ -83,16 +83,18 @@ export const Controls: React.FC<ControlsProps> = ({
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (difficulty !== 'expert' && e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.altKey) {
+      // Skip if user is typing in an input field
+      const activeElement = document.activeElement;
+      const isTypingInInput = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
+
+      if (difficulty !== 'expert' && e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.altKey && !isTypingInInput) {
         const num = parseInt(e.key);
         onInput(num);
         e.preventDefault();
       }
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (document.activeElement !== inputRef.current) {
-          onDelete();
-          e.preventDefault();
-        }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isTypingInInput) {
+        onDelete();
+        e.preventDefault();
       }
       if (difficulty !== 'expert' && (e.key === 'n' || e.key === 'N')) {
         onNoteToggle();

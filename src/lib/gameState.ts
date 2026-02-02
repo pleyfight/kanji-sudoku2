@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     getRandomPuzzle,
-    getPuzzleById
+    getPuzzleById,
+    markPuzzleSkipped
 } from '../data/puzzles';
 import type { Puzzle, Difficulty, CellData } from '../data/puzzles';
 
@@ -244,15 +245,26 @@ export function useGameState(): [GameState, GameActions] {
     }, [initializePuzzle]);
 
     // Start new game (random puzzle for difficulty)
+    // If skipping a puzzle (not completing it), mark it as skipped for deprioritization
     const startNewGame = useCallback((diff: Difficulty = difficulty) => {
+        // Mark current puzzle as skipped if we're switching mid-game
+        if (puzzleId && !isComplete) {
+            markPuzzleSkipped(puzzleId);
+            console.log(`[Kudoko] Marked puzzle #${puzzleId} as skipped`);
+        }
         const p = getRandomPuzzle(diff);
         initializePuzzle(p);
-    }, [difficulty, initializePuzzle]);
+    }, [difficulty, puzzleId, isComplete, initializePuzzle]);
 
-    // Initialize on mount
+    // Initialize on mount - use ref to ensure this only runs once
+    const hasInitialized = useRef(false);
     useEffect(() => {
-        startNewGame();
-    }, [startNewGame]);
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            const p = getRandomPuzzle('easy');
+            initializePuzzle(p);
+        }
+    }, [initializePuzzle]);
 
     // Toggle pause
     const togglePause = useCallback(() => {

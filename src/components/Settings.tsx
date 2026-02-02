@@ -119,7 +119,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                         className={`
                       flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-all
                       ${mode === option.value
-                                                ? 'bg-accent text-white shadow-lg'
+                                                ? 'bg-accent text-white dark:bg-white dark:text-black shadow-lg'
                                                 : 'glass-subtle glass-hover'}
                     `}
                                     >
@@ -148,7 +148,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                     className={`
                     flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-all
                     ${language === 'en'
-                                            ? 'bg-accent text-white shadow-lg'
+                                            ? 'bg-accent text-white dark:bg-white dark:text-black shadow-lg'
                                             : 'glass-subtle glass-hover'}
                   `}
                                 >
@@ -159,7 +159,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                     className={`
                     flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-all font-serif
                     ${language === 'ja'
-                                            ? 'bg-accent text-white shadow-lg'
+                                            ? 'bg-accent text-white dark:bg-white dark:text-black shadow-lg'
                                             : 'glass-subtle glass-hover'}
                   `}
                                 >
