@@ -1,4 +1,6 @@
-// Game State Management - Now with Pre-designed Puzzles
+// Game State Management - Refactored with Extracted Hooks
+// Following SRP: Timer, Score, and Hints logic extracted to dedicated hooks
+// These hooks can be composed for full decomposition in the future
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     getRandomPuzzle,
@@ -7,8 +9,15 @@ import {
 } from '../data/puzzles';
 import type { Puzzle, Difficulty, CellData } from '../data/puzzles';
 
+// Configuration and utilities from extracted hooks
+import { formatTime } from '../hooks/useTimer';
+import { SCORE_CONFIG } from '../hooks/useScore';
+import { HINTS_BY_DIFFICULTY } from '../hooks/useHints';
+
 export type { Difficulty };
 export type Language = 'en' | 'ja';
+// Re-export formatTime for external consumers
+export { formatTime };
 
 export interface GameState {
     // Puzzle info
@@ -71,35 +80,6 @@ export interface GameActions {
     setLanguage: (lang: Language) => void;
     setDifficulty: (diff: Difficulty) => void;
 }
-
-// Scoring constants
-const SCORE_CONFIG = {
-    correctCell: {
-        easy: 10,
-        medium: 20,
-        hard: 30,
-        expert: 50,
-    },
-    wordBonus: {
-        2: 50,
-        3: 100,
-        4: 200,
-    },
-    hintPenalty: 25,
-    timeBonus: {
-        easy: { threshold: 300, bonus: 100 },
-        medium: { threshold: 600, bonus: 200 },
-        hard: { threshold: 900, bonus: 500 },
-        expert: { threshold: 1200, bonus: 1000 },
-    },
-};
-
-const HINTS_BY_DIFFICULTY = {
-    easy: 10,
-    medium: 5,
-    hard: 3,
-    expert: 10,
-};
 
 // Check if a cell is editable (kanji blank, not revealed)
 function isCellEditable(cellData: CellData): boolean {
@@ -543,11 +523,4 @@ export function useGameState(): [GameState, GameActions] {
     };
 
     return [state, actions];
-}
-
-// Format time as MM:SS
-export function formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }

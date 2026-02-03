@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Settings } from './components/Settings';
 import { Cell } from './components/Cell';
@@ -11,34 +11,9 @@ import { VictoryModal } from './components/VictoryModal';
 import { HomeMenu } from './components/HomeMenu';
 import { KanjiHoverBox } from './components/KanjiHoverBox';
 import { useGameState, type Difficulty } from './lib/gameState';
-
-// Localized labels
-const LABELS = {
-  en: {
-    title: 'Kudoko',
-    easy: 'Easy',
-    medium: 'Medium',
-    hard: 'Hard',
-    expert: 'Expert',
-    newGame: 'New Game',
-    loading: 'Loading...',
-    paused: 'Paused',
-    puzzle: 'Puzzle',
-    goToPuzzle: 'Go to #',
-  },
-  ja: {
-    title: '漢字数独',
-    easy: '簡単',
-    medium: '普通',
-    hard: '難しい',
-    expert: '達人',
-    newGame: '新規ゲーム',
-    loading: '読み込み中...',
-    paused: '一時停止中',
-    puzzle: 'パズル',
-    goToPuzzle: '番号へ',
-  },
-};
+import { useIsMobile } from './hooks/useIsMobile';
+import { LABELS } from './lib/labels';
+import type { CellPosition } from './lib/types';
 
 function AppContent() {
   const [state, actions] = useGameState();
@@ -50,27 +25,18 @@ function AppContent() {
   const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty | null>(null);
   const [showDifficultyConfirm, setShowDifficultyConfirm] = useState(false);
   const [showMobileKanjiBox, setShowMobileKanjiBox] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile(); // Using extracted hook
   const [mobileExpertInput, setMobileExpertInput] = useState('');
   const mobileExpertInputRef = useRef<HTMLInputElement>(null);
-
-  // Detect mobile viewport
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // lg breakpoint
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const labels = LABELS[state.language];
 
   // Check if a cell value is valid according to Sudoku rules
-  const isCellValid = (row: number, col: number, val: number | null): boolean => {
+  const isCellValid = (position: CellPosition, val: number | null): boolean => {
     if (val === null) return true;
     if (state.difficulty === 'expert') return true;
 
+    const { row, col } = position;
     const board = state.currentBoard;
 
     for (let i = 0; i < 9; i++) {
@@ -261,7 +227,7 @@ function AppContent() {
                             state.selectedCell?.row === rowIndex &&
                             state.selectedCell?.col === colIndex
                           }
-                          isValid={isCellValid(rowIndex, colIndex, val)}
+                          isValid={isCellValid({ row: rowIndex, col: colIndex }, val)}
                           notes={state.notes[rowIndex][colIndex]}
                           symbols={displaySymbols}
                           isPaused={state.isPaused}
