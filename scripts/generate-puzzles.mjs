@@ -157,15 +157,24 @@ function buildSolutionFromTemplate(templateRows, symbols) {
   }));
 }
 
-function generateExpertRevealMask(rng) {
+function generateExpertRevealMask(templateRows, rng) {
   const revealed = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => false));
-  const positions = [];
+  const kanjiPositions = [];
+
+  // First pass: mark all kana as revealed, collect kanji positions
   for (let r = 0; r < 9; r += 1) {
     for (let c = 0; c < 9; c += 1) {
-      positions.push([r, c]);
+      const char = templateRows[r][c];
+      if (isKana(char)) {
+        revealed[r][c] = true; // Kana are always revealed
+      } else {
+        kanjiPositions.push([r, c]);
+      }
     }
   }
-  const shuffled = shuffle(positions, rng);
+
+  // Reveal exactly EXPERT_REVEAL_COUNT kanji
+  const shuffled = shuffle(kanjiPositions, rng);
   const revealCount = Math.min(EXPERT_REVEAL_COUNT, shuffled.length);
   for (let i = 0; i < revealCount; i += 1) {
     const [r, c] = shuffled[i];
@@ -321,7 +330,7 @@ function buildWordSquare(rowEntries, rowIndexByPos, columnTrie, rng) {
 
 function generateExpertPuzzles(globalSignatures) {
   const filePath = join(DATA_DIR, 'expert.json');
-  const rng = mulberry32(hashString('expert')); 
+  const rng = mulberry32(hashString('expert'));
   const rowEntries = sentencePools.rows.map((text) => ({ text, chars: Array.from(text) }));
   const columnSet = new Set(sentencePools.columns);
   const columnTrie = buildColumnTrie(sentencePools.columns);
@@ -374,7 +383,7 @@ function generateExpertPuzzles(globalSignatures) {
 
     const symbols = buildSymbolsFromTemplate(rows);
     const solution = buildSolutionFromTemplate(rows, symbols);
-    const revealed = generateExpertRevealMask(rng);
+    const revealed = generateExpertRevealMask(rows, rng);
     const signature = buildSignature(rows, symbols, 'expert');
 
     if (signatures.has(signature) || globalSignatures.has(signature)) {
