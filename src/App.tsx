@@ -224,10 +224,10 @@ function AppContent() {
               </header>
 
               {/* Main content - Board LEFT, Controls RIGHT */}
-              <div className="flex flex-col lg:flex-row gap-8 items-start justify-center w-full max-w-6xl animate-slide-up">
+              <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-center lg:items-start justify-center w-full max-w-6xl animate-slide-up px-2 lg:px-0">
 
                 {/* LEFT SIDE: Board */}
-                <div className="flex-shrink-0 relative min-w-0 w-[90vw] max-w-[420px] sm:max-w-[480px] lg:max-w-[520px] xl:max-w-[600px]">
+                <div className="flex-shrink-0 relative min-w-0 w-full max-w-[min(90vw,420px)] sm:max-w-[480px] lg:max-w-[520px] xl:max-w-[600px] mx-auto lg:mx-0">
 
                   {/* Pause overlay */}
                   {state.isPaused && (
@@ -278,10 +278,10 @@ function AppContent() {
                 </div>
 
                 {/* RIGHT SIDE: All Controls & Info */}
-                <div className="flex flex-col w-full lg:w-80 gap-6">
+                <div className="flex flex-col w-full max-w-[min(90vw,420px)] lg:max-w-none lg:w-80 gap-4 lg:gap-6 mx-auto lg:mx-0">
 
                   {/* Timer & Score */}
-                  <div className="glass p-4 flex justify-between items-center">
+                  <div className="glass p-3 lg:p-4 flex justify-between items-center">
                     <Timer
                       elapsedTime={state.elapsedTime}
                       isPaused={state.isPaused}
