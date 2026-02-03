@@ -434,17 +434,22 @@ export function useGameState(): [GameState, GameActions] {
         const { row, col } = selectedCell;
 
         if (difficulty === 'expert') {
-            const rowHint = puzzle.sentenceHints?.rows?.[row] ?? `Row ${row + 1} hint unavailable.`;
+            // Get the correct character for this cell
+            const correctValue = puzzle.solution[row][col];
+            const correctSymbol = puzzle.symbols[correctValue - 1];
+
+            // Get row/column sentence hints
+            const rowHint = puzzle.sentenceHints?.rows?.[row] ?? '';
             const columnIndex = 8 - col;
-            const colHint = puzzle.sentenceHints?.columns?.[columnIndex] ?? `Column ${columnIndex + 1} hint unavailable.`;
+            const colHint = puzzle.sentenceHints?.columns?.[columnIndex] ?? '';
 
             setHintsRemaining(prev => prev - 1);
             setHintsUsed(prev => prev + 1);
             setScore(prev => Math.max(0, prev - SCORE_CONFIG.hintPenalty));
 
             return {
-                meaning: `Row ${row + 1}: ${rowHint}\nColumn ${columnIndex + 1}: ${colHint}`,
-                reading: '',
+                meaning: `The answer is: ${correctSymbol}\n\nRow ${row + 1}: ${rowHint}\nColumn ${col + 1}: ${colHint}`,
+                reading: correctSymbol,
             };
         }
 

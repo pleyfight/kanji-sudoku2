@@ -284,32 +284,38 @@ function AppContent() {
                     )}
                   </div>
 
-                  {/* Hidden input for Expert mode mobile keyboard */}
-                  {isMobile && state.difficulty === 'expert' && (
-                    <input
-                      ref={mobileExpertInputRef}
-                      type="text"
-                      inputMode="text"
-                      value={mobileExpertInput}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setMobileExpertInput(value);
-                        // Auto-submit when a valid character is entered
-                        if (value.length > 0) {
-                          const lastChar = value[value.length - 1];
-                          actions.inputSymbol(lastChar);
-                          setMobileExpertInput('');
-                        }
-                      }}
-                      onBlur={() => setMobileExpertInput('')}
-                      className="absolute opacity-0 pointer-events-none"
-                      style={{ position: 'absolute', left: '-9999px' }}
-                      lang="ja"
-                      autoComplete="off"
-                      autoCorrect="off"
-                      autoCapitalize="off"
-                      spellCheck={false}
-                    />
+                  {/* Mobile input for Expert mode keyboard */}
+                  {isMobile && state.difficulty === 'expert' && state.selectedCell && (
+                    <div className="flex justify-center mt-2">
+                      <input
+                        ref={mobileExpertInputRef}
+                        type="text"
+                        inputMode="text"
+                        value={mobileExpertInput}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setMobileExpertInput(value);
+                          // Auto-submit when a valid character is entered
+                          if (value.length > 0) {
+                            const lastChar = value[value.length - 1];
+                            actions.inputSymbol(lastChar);
+                            setMobileExpertInput('');
+                          }
+                        }}
+                        placeholder="漢字を入力..."
+                        className="w-48 px-4 py-3 text-xl text-center border-2 rounded-none font-serif"
+                        style={{
+                          borderColor: 'var(--border-primary)',
+                          backgroundColor: 'var(--bg-primary)',
+                          color: 'var(--text-primary)',
+                        }}
+                        lang="ja"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        spellCheck={false}
+                      />
+                    </div>
                   )}
                 </div>
 

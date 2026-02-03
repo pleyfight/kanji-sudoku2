@@ -38,9 +38,9 @@ export const Controls: React.FC<ControlsProps> = ({
       inputPlaceholder: 'Type kanji...',
     },
     ja: {
-      noteMode: 'ãƒ¡ãƒ¢',
-      hint: 'ãƒ’ãƒ³ãƒˆ',
-      inputPlaceholder: 'æ¼¢å­—ã‚’å…¥åŠ›...',
+      noteMode: 'メモ',
+      hint: 'ヒント',
+      inputPlaceholder: '漢字を入力...',
     },
   };
 
