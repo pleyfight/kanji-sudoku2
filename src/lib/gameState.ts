@@ -261,8 +261,11 @@ export function useGameState(): [GameState, GameActions] {
     useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
-            const p = getRandomPuzzle('easy');
-            initializePuzzle(p);
+            // Use queueMicrotask to avoid synchronous setState warning
+            queueMicrotask(() => {
+                const p = getRandomPuzzle('easy');
+                initializePuzzle(p);
+            });
         }
     }, [initializePuzzle]);
 

@@ -78,8 +78,8 @@ export const generateSudoku = (difficulty: 'easy' | 'medium' | 'hard' = 'easy') 
   let attempts = difficulty === 'easy' ? 30 : difficulty === 'medium' ? 45 : 55;
   
   while (attempts > 0) {
-    let row = Math.floor(Math.random() * 9);
-    let col = Math.floor(Math.random() * 9);
+    const row = Math.floor(Math.random() * 9);
+    const col = Math.floor(Math.random() * 9);
     
     if (puzzleBoard[row][col] !== BLANK) {
       puzzleBoard[row][col] = BLANK;
