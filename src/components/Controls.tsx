@@ -12,6 +12,7 @@ interface ControlsProps {
   difficulty: 'easy' | 'medium' | 'hard' | 'expert';
   hintsRemaining: number;
   language: 'en' | 'ja';
+  hideMobileKanjiGrid?: boolean; // Hide kanji grid on mobile for Easy/Medium/Hard
 }
 
 export const Controls: React.FC<ControlsProps> = ({
@@ -25,6 +26,7 @@ export const Controls: React.FC<ControlsProps> = ({
   difficulty,
   hintsRemaining,
   language,
+  hideMobileKanjiGrid = false,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -135,8 +137,8 @@ export const Controls: React.FC<ControlsProps> = ({
         </div>
       )}
 
-      {/* Kanji buttons grid */}
-      {showKanjiGrid && (
+      {/* Kanji buttons grid - hide on mobile when hideMobileKanjiGrid is true */}
+      {showKanjiGrid && !hideMobileKanjiGrid && (
         <div className="grid grid-cols-5 gap-2">
           {kanjiList.map((kanji, index) => (
             <button

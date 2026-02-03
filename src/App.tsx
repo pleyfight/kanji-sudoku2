@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Settings } from './components/Settings';
 import { Cell } from './components/Cell';
@@ -9,6 +9,7 @@ import { WordList } from './components/WordList';
 import { HintModal } from './components/HintModal';
 import { VictoryModal } from './components/VictoryModal';
 import { HomeMenu } from './components/HomeMenu';
+import { KanjiHoverBox } from './components/KanjiHoverBox';
 import { useGameState, type Difficulty } from './lib/gameState';
 
 // Localized labels
@@ -48,6 +49,18 @@ function AppContent() {
   const [pendingPuzzleId, setPendingPuzzleId] = useState<number | null>(null);
   const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty | null>(null);
   const [showDifficultyConfirm, setShowDifficultyConfirm] = useState(false);
+  const [showMobileKanjiBox, setShowMobileKanjiBox] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const labels = LABELS[state.language];
 
@@ -249,8 +262,15 @@ function AppContent() {
                           isValid={isCellValid(rowIndex, colIndex, val)}
                           notes={state.notes[rowIndex][colIndex]}
                           symbols={displaySymbols}
-                          onClick={() => actions.selectCell(rowIndex, colIndex)}
                           isPaused={state.isPaused}
+                          onClick={() => {
+                            actions.selectCell(rowIndex, colIndex);
+                            // Show hover box on mobile for non-expert modes when tapping editable cell
+                            const cellData = state.puzzle?.grid[rowIndex][colIndex];
+                            if (isMobile && state.difficulty !== 'expert' && cellData && !cellData.isRevealed && !cellData.isKana) {
+                              setShowMobileKanjiBox(true);
+                            }
+                          }}
                         />
                       ))
                     )}
@@ -289,18 +309,25 @@ function AppContent() {
                     />
                   )}
 
-                  {/* Controls */}
+                  {/* Controls - hide kanji grid on mobile for non-expert */}
                   <Controls
                     kanjiList={state.puzzle!.symbols}
-                    onInput={actions.inputValue}
+                    onInput={(num) => {
+                      actions.inputValue(num);
+                      if (isMobile) setShowMobileKanjiBox(false);
+                    }}
                     onInputSymbol={actions.inputSymbol}
-                    onDelete={actions.deleteValue}
+                    onDelete={() => {
+                      actions.deleteValue();
+                      if (isMobile) setShowMobileKanjiBox(false);
+                    }}
                     onNoteToggle={actions.toggleNoteMode}
                     onHint={handleHintRequest}
                     isNoteMode={state.isNoteMode}
                     difficulty={state.difficulty}
                     hintsRemaining={state.hintsRemaining}
                     language={state.language}
+                    hideMobileKanjiGrid={isMobile && state.difficulty !== 'expert'}
                   />
 
                   {/* New Game & Puzzle ID */}
@@ -358,6 +385,26 @@ function AppContent() {
         onNewGame={() => actions.startNewGame()}
         language={state.language}
       />
+
+      {/* Mobile Kanji Hover Box - Only for Easy/Medium/Hard on mobile */}
+      {showMobileKanjiBox && isMobile && state.difficulty !== 'expert' && state.puzzle && (
+        <KanjiHoverBox
+          kanjiList={state.puzzle.symbols}
+          onSelect={(num) => {
+            actions.inputValue(num);
+            setShowMobileKanjiBox(false);
+          }}
+          onDelete={() => {
+            actions.deleteValue();
+            setShowMobileKanjiBox(false);
+          }}
+          onClose={() => setShowMobileKanjiBox(false)}
+          selectedCell={state.selectedCell}
+          isNoteMode={state.isNoteMode}
+          onNoteToggle={actions.toggleNoteMode}
+          language={state.language}
+        />
+      )}
 
       {/* Difficulty Switch Confirmation Modal */}
       {showDifficultyConfirm && pendingDifficulty && (
