@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Settings } from './components/Settings';
 import { Cell } from './components/Cell';
@@ -51,6 +51,8 @@ function AppContent() {
   const [showDifficultyConfirm, setShowDifficultyConfirm] = useState(false);
   const [showMobileKanjiBox, setShowMobileKanjiBox] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileExpertInput, setMobileExpertInput] = useState('');
+  const mobileExpertInputRef = useRef<HTMLInputElement>(null);
 
   // Detect mobile viewport
   useEffect(() => {
@@ -265,16 +267,50 @@ function AppContent() {
                           isPaused={state.isPaused}
                           onClick={() => {
                             actions.selectCell(rowIndex, colIndex);
-                            // Show hover box on mobile for non-expert modes when tapping editable cell
+                            // Show hover box or keyboard on mobile when tapping editable cell
                             const cellData = state.puzzle?.grid[rowIndex][colIndex];
-                            if (isMobile && state.difficulty !== 'expert' && cellData && !cellData.isRevealed && !cellData.isKana) {
-                              setShowMobileKanjiBox(true);
+                            if (isMobile && cellData && !cellData.isRevealed && !cellData.isKana) {
+                              if (state.difficulty === 'expert') {
+                                // Expert mode: focus hidden input to show keyboard
+                                setTimeout(() => mobileExpertInputRef.current?.focus(), 50);
+                              } else {
+                                // Easy/Medium/Hard: show hover box
+                                setShowMobileKanjiBox(true);
+                              }
                             }
                           }}
                         />
                       ))
                     )}
                   </div>
+
+                  {/* Hidden input for Expert mode mobile keyboard */}
+                  {isMobile && state.difficulty === 'expert' && (
+                    <input
+                      ref={mobileExpertInputRef}
+                      type="text"
+                      inputMode="text"
+                      value={mobileExpertInput}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setMobileExpertInput(value);
+                        // Auto-submit when a valid character is entered
+                        if (value.length > 0) {
+                          const lastChar = value[value.length - 1];
+                          actions.inputSymbol(lastChar);
+                          setMobileExpertInput('');
+                        }
+                      }}
+                      onBlur={() => setMobileExpertInput('')}
+                      className="absolute opacity-0 pointer-events-none"
+                      style={{ position: 'absolute', left: '-9999px' }}
+                      lang="ja"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
+                    />
+                  )}
                 </div>
 
                 {/* RIGHT SIDE: All Controls & Info */}
