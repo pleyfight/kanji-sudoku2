@@ -48,7 +48,7 @@ export const Timer: React.FC<TimerProps> = ({
             <button
                 onClick={onTogglePause}
                 className={`
-          px-4 py-1.5 text-sm font-medium transition-all border-2
+          px-4 py-1.5 text-sm font-medium transition-all border-2 whitespace-nowrap
           ${isPaused
                         ? 'bg-black text-white dark:bg-white dark:text-black border-primary'
                         : 'bg-primary text-secondary border-primary hover:-translate-y-0.5'}

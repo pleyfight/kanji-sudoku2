@@ -35,7 +35,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 {/* Score */}
                 <div className="flex flex-col items-center">
                     <span
-                        className="text-xs uppercase tracking-wider font-medium"
+                        className="text-xs uppercase tracking-wider font-medium whitespace-nowrap"
                         style={{ color: 'var(--text-muted)' }}
                     >
                         {labels[language].score}
@@ -54,7 +54,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 {/* Words Found */}
                 <div className="flex flex-col items-center">
                     <span
-                        className="text-xs uppercase tracking-wider font-medium"
+                        className="text-xs uppercase tracking-wider font-medium whitespace-nowrap"
                         style={{ color: 'var(--text-muted)' }}
                     >
                         {labels[language].words}
@@ -73,7 +73,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
                 {/* Hints */}
                 <div className="flex flex-col items-center">
                     <span
-                        className="text-xs uppercase tracking-wider font-medium"
+                        className="text-xs uppercase tracking-wider font-medium whitespace-nowrap"
                         style={{ color: 'var(--text-muted)' }}
                     >
                         {labels[language].hints}
