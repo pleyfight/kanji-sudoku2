@@ -60,6 +60,7 @@ export interface GameActions {
     // Game control
     startNewGame: (difficulty?: Difficulty) => void;
     loadPuzzle: (id: number) => boolean;
+    restartPuzzle: () => void;
     togglePause: () => void;
 
     // Cell actions
@@ -235,6 +236,11 @@ export function useGameState(): [GameState, GameActions] {
         const p = getRandomPuzzle(diff);
         initializePuzzle(p);
     }, [difficulty, puzzleId, isComplete, initializePuzzle]);
+
+    const restartPuzzle = useCallback(() => {
+        if (!puzzle) return;
+        initializePuzzle(puzzle);
+    }, [puzzle, initializePuzzle]);
 
     // Initialize on mount - use ref to ensure this only runs once
     const hasInitialized = useRef(false);
@@ -509,6 +515,7 @@ export function useGameState(): [GameState, GameActions] {
     const actions: GameActions = {
         startNewGame,
         loadPuzzle,
+        restartPuzzle,
         togglePause,
         selectCell,
         deselectCell,

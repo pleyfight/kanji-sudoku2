@@ -106,6 +106,16 @@ function AppContent() {
     setSolutionStatus(isCorrect ? 'correct' : 'incorrect');
   };
 
+  const handleNewGame = () => {
+    actions.startNewGame(state.difficulty);
+    setSolutionStatus('idle');
+  };
+
+  const handleRestartGame = () => {
+    actions.restartPuzzle();
+    setSolutionStatus('idle');
+  };
+
   const handleConfirmDifficultySwitch = () => {
     if (pendingPuzzleId && pendingDifficulty) {
       actions.setDifficulty(pendingDifficulty);
@@ -364,13 +374,21 @@ function AppContent() {
                     Hint ({state.hintsRemaining})
                   </button>
                 </div>
-                <button
-                  onClick={() => actions.startNewGame()}
-                  className="action-btn"
-                  style={{ color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 35%, transparent)' }}
-                >
-                  Restart Game
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleNewGame}
+                    className="action-btn"
+                  >
+                    New Game
+                  </button>
+                  <button
+                    onClick={handleRestartGame}
+                    className="action-btn"
+                    style={{ color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 35%, transparent)' }}
+                  >
+                    Restart Game
+                  </button>
+                </div>
               </div>
             </div>
 
