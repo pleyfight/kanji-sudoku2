@@ -3,6 +3,7 @@
 
 import { loadPuzzles } from './loader';
 import { type Puzzle, type Difficulty } from './types';
+import { safeStorage } from '../../lib/safeStorage';
 
 // All puzzles combined
 export const ALL_PUZZLES: Puzzle[] = loadPuzzles();
@@ -36,22 +37,12 @@ const SKIP_SCORES_KEY = 'kudoko_skip_scores';
 let skipScores: Record<number, number> = {};
 
 function loadSkipScores(): void {
-    try {
-        const stored = localStorage.getItem(SKIP_SCORES_KEY);
-        if (stored) {
-            skipScores = JSON.parse(stored);
-        }
-    } catch {
-        skipScores = {};
-    }
+    const stored = safeStorage.getJSON<Record<number, number>>(SKIP_SCORES_KEY);
+    skipScores = stored ?? {};
 }
 
 function saveSkipScores(): void {
-    try {
-        localStorage.setItem(SKIP_SCORES_KEY, JSON.stringify(skipScores));
-    } catch {
-        // Ignore storage errors
-    }
+    safeStorage.setJSON(SKIP_SCORES_KEY, skipScores);
 }
 
 // Mark a puzzle as skipped (increases its score, pushes it to end of future shuffles)

@@ -13,6 +13,7 @@ import type { Puzzle, Difficulty, CellData } from '../data/puzzles';
 import { formatTime } from '../hooks/useTimer';
 import { SCORE_CONFIG } from '../hooks/useScore';
 import { HINTS_BY_DIFFICULTY } from '../hooks/useHints';
+import { safeStorage } from './safeStorage';
 
 export type { Difficulty };
 export type Language = 'en' | 'ja';
@@ -262,14 +263,14 @@ export function useGameState(): [GameState, GameActions] {
 
     // Select cell
     const selectCell = useCallback((row: number, col: number) => {
-        if (!puzzle) return;
+        if (!puzzle || isPaused) return;
 
         const cellData = puzzle.grid[row][col];
         // Only select editable cells (kanji blanks)
         if (isCellEditable(cellData)) {
             setSelectedCell({ row, col });
         }
-    }, [puzzle]);
+    }, [puzzle, isPaused]);
 
     // Deselect cell
     const deselectCell = useCallback(() => {
@@ -342,17 +343,17 @@ export function useGameState(): [GameState, GameActions] {
 
     // Input value
     const inputValue = useCallback((num: number) => {
-        if (!selectedCell || !puzzle || isComplete || isFailed) return;
+        if (!selectedCell || !puzzle || isComplete || isFailed || isPaused) return;
         const { row, col } = selectedCell;
 
         const cellData = puzzle.grid[row][col];
         if (!isCellEditable(cellData)) return;
 
         applyValue(row, col, num);
-    }, [selectedCell, puzzle, isComplete, isFailed, applyValue]);
+    }, [selectedCell, puzzle, isComplete, isFailed, isPaused, applyValue]);
 
     const inputSymbol = useCallback((symbol: string) => {
-        if (!selectedCell || !puzzle || isComplete || isFailed || difficulty !== 'expert') return;
+        if (!selectedCell || !puzzle || isComplete || isFailed || isPaused || difficulty !== 'expert') return;
         const { row, col } = selectedCell;
 
         const cellData = puzzle.grid[row][col];
@@ -395,11 +396,11 @@ export function useGameState(): [GameState, GameActions] {
                 setIsFailed(true);
             }
         }
-    }, [selectedCell, puzzle, isComplete, isFailed, difficulty, expertSlots, applyValue]);
+    }, [selectedCell, puzzle, isComplete, isFailed, isPaused, difficulty, expertSlots, applyValue]);
 
     // Delete value
     const deleteValue = useCallback(() => {
-        if (!selectedCell || !puzzle || isComplete || isFailed) return;
+        if (!selectedCell || !puzzle || isComplete || isFailed || isPaused) return;
         const { row, col } = selectedCell;
 
         const cellData = puzzle.grid[row][col];
@@ -410,16 +411,17 @@ export function useGameState(): [GameState, GameActions] {
             newBoard[row][col] = null;
             return newBoard;
         });
-    }, [selectedCell, puzzle, isComplete, isFailed]);
+    }, [selectedCell, puzzle, isComplete, isFailed, isPaused]);
 
     // Toggle note mode
     const toggleNoteMode = useCallback(() => {
+        if (isPaused) return;
         setIsNoteMode(prev => !prev);
-    }, []);
+    }, [isPaused]);
 
     // Request hint
     const requestHint = useCallback((): { meaning: string; reading: string } | null => {
-        if (!selectedCell || !puzzle || hintsRemaining <= 0 || isFailed) return null;
+        if (!selectedCell || !puzzle || hintsRemaining <= 0 || isFailed || isPaused) return null;
         const { row, col } = selectedCell;
 
         if (difficulty === 'expert') {
@@ -465,7 +467,7 @@ export function useGameState(): [GameState, GameActions] {
             meaning: `Think about this symbol...`,
             reading: '',
         };
-    }, [selectedCell, puzzle, hintsRemaining, difficulty, isFailed]);
+    }, [selectedCell, puzzle, hintsRemaining, difficulty, isFailed, isPaused]);
 
     // Check solution
     const checkSolution = useCallback((): boolean => {
@@ -483,7 +485,7 @@ export function useGameState(): [GameState, GameActions] {
     // Set language
     const setLanguageAction = useCallback((lang: Language) => {
         setLanguage(lang);
-        localStorage.setItem('kanjiSudoku_language', lang);
+        safeStorage.setItem('kanjiSudoku_language', lang);
     }, []);
 
     // Set difficulty

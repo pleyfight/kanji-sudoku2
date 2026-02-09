@@ -1,5 +1,6 @@
 // Theme Provider - Manages light/dark/auto theme modes
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { safeStorage } from '../lib/safeStorage';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -31,11 +32,9 @@ function getSystemPreference(): boolean {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Load saved preference or default to 'auto'
     const [mode, setModeState] = useState<ThemeMode>(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved === 'light' || saved === 'dark' || saved === 'auto') {
-                return saved;
-            }
+        const saved = safeStorage.getItem(STORAGE_KEY);
+        if (saved === 'light' || saved === 'dark' || saved === 'auto') {
+            return saved;
         }
         return 'auto';
     });
@@ -51,7 +50,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Update mode and persist
     const setMode = useCallback((newMode: ThemeMode) => {
         setModeState(newMode);
-        localStorage.setItem(STORAGE_KEY, newMode);
+        safeStorage.setItem(STORAGE_KEY, newMode);
     }, []);
 
     // Effect to update isDark when mode changes or time passes
