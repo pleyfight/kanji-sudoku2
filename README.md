@@ -104,6 +104,10 @@ POOL_BASE_URL=https://your-host/data npm run download:pools
 Compressed pools are written to `public/data/puzzles/*.json.gz` and
 `public/data/sentences/*.json.gz`.
 
+## Internal Review Docs
+
+The [review/](review/) folder contains internal-only process and optimization docs. It is excluded from deployment via [.vercelignore](.vercelignore), so end users will not see it online.
+
 ## Tech Stack
 
 - **React 19** - UI framework
