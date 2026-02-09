@@ -1,4 +1,4 @@
-// ScoreBoard Component with Liquid Glass styling
+// ScoreBoard Component
 import React from 'react';
 
 interface ScoreBoardProps {

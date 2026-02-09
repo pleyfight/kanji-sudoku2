@@ -14,10 +14,16 @@
     --accent: #990000;
     --accent-soft: #fff5f5;
     --accent-contrast: #ffffff;
+    --accent-glow: rgba(153, 0, 0, 0.35);
+    --accent-easy: #2563eb;
+    --accent-medium: #16a34a;
+    --accent-hard: #d97706;
+    --accent-expert: #b91c1c;
     --error: #b91c1c;
     --success: #15803d;
     --border-subtle: rgba(26, 26, 26, 0.1);
     --border-strong: #1a1a1a;
+    --border-primary: var(--border-strong);
     --grid-line: #1a1a1a;
     --cell-bg: #ffffff;
     --cell-hover: #f5f5f5;
@@ -26,6 +32,7 @@
     --cell-given: #1a1a1a;
     --cell-user: #1f2937;
     --shadow-panel: 0 18px 40px rgba(0, 0, 0, 0.08);
+    --shadow-hard: 0 18px 40px rgba(0, 0, 0, 0.12);
     --page-pattern:
       radial-gradient(800px 400px at 10% 10%, rgba(153, 0, 0, 0.07), transparent 60%),
       radial-gradient(600px 400px at 90% 0%, rgba(0, 0, 0, 0.05), transparent 60%),
@@ -43,10 +50,16 @@
     --accent: #d4af37;
     --accent-soft: #2d3748;
     --accent-contrast: #121212;
+    --accent-glow: rgba(212, 175, 55, 0.35);
+    --accent-easy: #60a5fa;
+    --accent-medium: #4ade80;
+    --accent-hard: #fbbf24;
+    --accent-expert: #f87171;
     --error: #f87171;
     --success: #4ade80;
     --border-subtle: rgba(248, 249, 250, 0.12);
     --border-strong: #f8f9fa;
+    --border-primary: var(--border-strong);
     --grid-line: #f8f9fa;
     --cell-bg: #121212;
     --cell-hover: #1a202c;
@@ -55,6 +68,7 @@
     --cell-given: #a0aec0;
     --cell-user: #f8f9fa;
     --shadow-panel: 0 20px 50px rgba(0, 0, 0, 0.5);
+    --shadow-hard: 0 20px 50px rgba(0, 0, 0, 0.6);
     --page-pattern:
       radial-gradient(800px 400px at 10% 10%, rgba(212, 175, 55, 0.08), transparent 60%),
       radial-gradient(600px 400px at 90% 0%, rgba(248, 249, 250, 0.04), transparent 60%),

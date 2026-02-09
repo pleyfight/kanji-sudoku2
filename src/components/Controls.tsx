@@ -1,4 +1,4 @@
-﻿// Controls Component with Liquid Glass styling
+// Controls Component
 import React, { useState, useRef, useEffect } from 'react';
 
 interface ControlsProps {
@@ -14,6 +14,7 @@ interface ControlsProps {
   language: 'en' | 'ja';
   layout?: 'panel' | 'sidebar';
   showActions?: boolean;
+  hideMobileKanjiGrid?: boolean;
 }
 
 export const Controls: React.FC<ControlsProps> = ({
@@ -29,6 +30,7 @@ export const Controls: React.FC<ControlsProps> = ({
   language,
   layout = 'panel',
   showActions = true,
+  hideMobileKanjiGrid = false,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +51,7 @@ export const Controls: React.FC<ControlsProps> = ({
   const isJapaneseChar = (char: string) => {
     const code = char.codePointAt(0);
     if (code === undefined) return false;
-    if ([0x3005, 0x3007, 0x303b].includes(code)) return true; // 々, 〇, 〻
+    if ([0x3005, 0x3007, 0x303b].includes(code)) return true;
     if ((code >= 0x3040 && code <= 0x309f) || (code >= 0x30a0 && code <= 0x30ff)) {
       return true;
     }
@@ -62,7 +64,6 @@ export const Controls: React.FC<ControlsProps> = ({
     return false;
   };
 
-  // Handle keyboard input for expert mode
   const handleKeyInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
@@ -84,19 +85,19 @@ export const Controls: React.FC<ControlsProps> = ({
     }
   };
 
-  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (difficulty !== 'expert' && e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.altKey) {
+      const activeElement = document.activeElement;
+      const isTypingInInput = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
+
+      if (difficulty !== 'expert' && e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.altKey && !isTypingInInput) {
         const num = parseInt(e.key);
         onInput(num);
         e.preventDefault();
       }
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (document.activeElement !== inputRef.current) {
-          onDelete();
-          e.preventDefault();
-        }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isTypingInInput) {
+        onDelete();
+        e.preventDefault();
       }
       if (difficulty !== 'expert' && (e.key === 'n' || e.key === 'N')) {
         onNoteToggle();
@@ -113,12 +114,11 @@ export const Controls: React.FC<ControlsProps> = ({
   }, [onInput, onInputSymbol, onDelete, onNoteToggle, onHint, difficulty]);
 
   const showKeyboardInput = difficulty === 'expert';
-  const showKanjiGrid = difficulty !== 'expert';
+  const showKanjiGrid = difficulty !== 'expert' && !hideMobileKanjiGrid;
   const isSidebar = layout === 'sidebar';
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Keyboard input for expert mode */}
       {showKeyboardInput && (
         <div className="mb-2">
           <input
@@ -138,7 +138,6 @@ export const Controls: React.FC<ControlsProps> = ({
         </div>
       )}
 
-      {/* Kanji buttons grid */}
       {showKanjiGrid && (
         <div className={`grid ${isSidebar ? 'grid-cols-3 gap-2' : 'grid-cols-5 gap-2'}`}>
           {kanjiList.map((kanji, index) => (
@@ -161,7 +160,6 @@ export const Controls: React.FC<ControlsProps> = ({
             </button>
           ))}
 
-          {/* Delete button */}
           {!isSidebar && (
             <button
               onClick={onDelete}
@@ -174,7 +172,6 @@ export const Controls: React.FC<ControlsProps> = ({
         </div>
       )}
 
-      {/* Control buttons row */}
       {showActions && (
         <div className="flex justify-center gap-3">
           {difficulty !== 'expert' && (

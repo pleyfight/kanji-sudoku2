@@ -1,4 +1,4 @@
-// Timer Component with Liquid Glass styling
+// Timer Component
 import React from 'react';
 import { formatTime } from '../lib/gameState';
 

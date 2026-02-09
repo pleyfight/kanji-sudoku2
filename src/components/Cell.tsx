@@ -27,23 +27,19 @@ export const Cell: React.FC<CellProps> = ({
   onClick,
   isPaused = false,
 }) => {
-  // Determine borders based on 3x3 grid
   const isRightBorder = (col + 1) % 3 === 0 && col !== 8;
   const isBottomBorder = (row + 1) % 3 === 0 && row !== 8;
 
-  // Is this a fixed kana cell?
   const isKana = cellData.isKana;
   const isRevealed = cellData.isRevealed;
   const isEditable = !isKana && !isRevealed;
 
-  // Get display symbol
   const displaySymbol = isKana
     ? cellData.symbol
     : value !== null
       ? symbols[value - 1]
       : null;
 
-  // Show blur overlay when paused
   if (isPaused) {
     return (
       <div
@@ -105,7 +101,6 @@ export const Cell: React.FC<CellProps> = ({
           {displaySymbol}
         </span>
       ) : (
-        // Empty cell - show notes
         <div className="grid grid-cols-3 gap-0 w-full h-full p-0.5">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <div key={num} className="flex items-center justify-center">
