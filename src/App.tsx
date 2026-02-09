@@ -187,20 +187,19 @@ function AppContent() {
             </div>
           </div>
         </header>
-      ) : (
-        <div className="flex justify-end p-4">
-          <Settings
-            language={state.language}
-            onLanguageChange={actions.setLanguage}
-          />
-        </div>
-      )}
+      ) : null}
 
       <main className={view === 'game' ? 'flex-grow flex justify-center py-10 px-6' : 'flex-grow flex justify-center'}>
         {view === 'home' ? (
           <HomeMenu
             onSelectDifficulty={handleDifficultySelect}
             language={state.language}
+            settingsSlot={(
+              <Settings
+                language={state.language}
+                onLanguageChange={actions.setLanguage}
+              />
+            )}
           />
         ) : isLoading ? (
           <div className="flex h-[70vh] items-center justify-center">

@@ -56,7 +56,7 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                 </div>
 
                 {/* Kanji Grid - 5 columns */}
-                <div className="grid grid-cols-5 gap-2 mb-3">
+                <div className="grid grid-cols-3 gap-2 mb-3">
                     {kanjiList.map((kanji, index) => (
                         <button
                             key={index}
