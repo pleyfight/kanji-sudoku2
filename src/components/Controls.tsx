@@ -12,6 +12,8 @@ interface ControlsProps {
   difficulty: 'easy' | 'medium' | 'hard' | 'expert';
   hintsRemaining: number;
   language: 'en' | 'ja';
+  layout?: 'panel' | 'sidebar';
+  showActions?: boolean;
 }
 
 export const Controls: React.FC<ControlsProps> = ({
@@ -25,6 +27,8 @@ export const Controls: React.FC<ControlsProps> = ({
   difficulty,
   hintsRemaining,
   language,
+  layout = 'panel',
+  showActions = true,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,9 +40,9 @@ export const Controls: React.FC<ControlsProps> = ({
       inputPlaceholder: 'Type kanji...',
     },
     ja: {
-      noteMode: 'ãƒ¡ãƒ¢',
-      hint: 'ãƒ’ãƒ³ãƒˆ',
-      inputPlaceholder: 'æ¼¢å­—ã‚’å…¥åŠ›...',
+      noteMode: 'メモ',
+      hint: 'ヒント',
+      inputPlaceholder: '漢字を入力...',
     },
   };
 
@@ -110,9 +114,10 @@ export const Controls: React.FC<ControlsProps> = ({
 
   const showKeyboardInput = difficulty === 'expert';
   const showKanjiGrid = difficulty !== 'expert';
+  const isSidebar = layout === 'sidebar';
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
+    <div className="flex flex-col gap-4 w-full">
       {/* Keyboard input for expert mode */}
       {showKeyboardInput && (
         <div className="mb-2">
@@ -122,11 +127,11 @@ export const Controls: React.FC<ControlsProps> = ({
             value={inputValue}
             onChange={handleKeyInput}
             placeholder={labels[language].inputPlaceholder}
-            className="w-full px-4 py-3 text-xl text-center kanji-cell glass rounded-xl
-              focus:outline-none focus:ring-2 focus:ring-accent/50"
+            className="w-full px-4 py-3 text-lg text-center kanji-cell rounded-sm border focus:outline-none"
             style={{
               color: 'var(--text-primary)',
-              background: 'var(--bg-glass)',
+              background: 'var(--bg-panel)',
+              borderColor: 'var(--border-subtle)',
             }}
             lang="ja"
           />
@@ -135,94 +140,69 @@ export const Controls: React.FC<ControlsProps> = ({
 
       {/* Kanji buttons grid */}
       {showKanjiGrid && (
-        <div className="grid grid-cols-5 gap-2">
+        <div className={`grid ${isSidebar ? 'grid-cols-3 gap-2' : 'grid-cols-5 gap-2'}`}>
           {kanjiList.map((kanji, index) => (
             <button
               key={index}
               onClick={() => onInput(index + 1)}
-              className="
-                aspect-square flex flex-col items-center justify-center
-                glass glass-hover rounded-xl
-                transition-all hover:scale-105 hover:glow active:scale-95
-              "
+              className={`kanji-key ${isSidebar ? '' : 'shadow-sm'}`}
             >
-              <span
-                className="text-xl md:text-2xl kanji-cell"
-                style={{ color: 'var(--text-primary)' }}
-              >
+              <span className="text-xl md:text-2xl kanji-cell">
                 {kanji}
               </span>
-              <span
-                className="text-[10px]"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {index + 1}
-              </span>
+              {!isSidebar && (
+                <span
+                  className="text-[10px]"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {index + 1}
+                </span>
+              )}
             </button>
           ))}
 
           {/* Delete button */}
-          <button
-            onClick={onDelete}
-            className="
-              aspect-square flex items-center justify-center
-              glass glass-hover rounded-xl
-              transition-all hover:scale-105 active:scale-95
-            "
-            style={{ color: 'var(--error)' }}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z"
-              />
-            </svg>
-          </button>
+          {!isSidebar && (
+            <button
+              onClick={onDelete}
+              className="kanji-key"
+              style={{ color: 'var(--error)' }}
+            >
+              <span className="material-symbols-outlined text-2xl">backspace</span>
+            </button>
+          )}
         </div>
       )}
 
       {/* Control buttons row */}
-      <div className="flex justify-center gap-3">
-        {difficulty !== 'expert' && (
-          <button
-            onClick={onNoteToggle}
-            className={`
-              px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2
-              ${isNoteMode
-                ? 'bg-accent text-white shadow-lg'
-                : 'glass glass-hover'}
-            `}
-            style={!isNoteMode ? { color: 'var(--text-secondary)' } : undefined}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
-            <span className="text-sm">{labels[language].noteMode}</span>
-          </button>
-        )}
+      {showActions && (
+        <div className="flex justify-center gap-3">
+          {difficulty !== 'expert' && (
+            <button
+              onClick={onNoteToggle}
+              className="action-btn flex items-center gap-2"
+              style={isNoteMode ? { color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' } : undefined}
+            >
+              <span className="material-symbols-outlined text-[14px]">edit_note</span>
+              <span>{labels[language].noteMode}</span>
+            </button>
+          )}
 
-        {/* Hint button */}
-        <button
-          onClick={onHint}
-          disabled={hintsRemaining <= 0}
-          className={`
-            px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2
-            ${hintsRemaining > 0
-              ? 'glass glass-hover'
-              : 'opacity-40 cursor-not-allowed'}
-          `}
-          style={{ color: hintsRemaining > 0 ? 'var(--text-secondary)' : 'var(--text-muted)' }}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-            />
-          </svg>
-          <span className="text-sm">{labels[language].hint}</span>
-          <span className="text-xs opacity-70">({hintsRemaining})</span>
-        </button>
-      </div>
+          <button
+            onClick={onHint}
+            disabled={hintsRemaining <= 0}
+            className="action-btn flex items-center gap-2"
+            style={{
+              opacity: hintsRemaining > 0 ? 1 : 0.5,
+              cursor: hintsRemaining > 0 ? 'pointer' : 'not-allowed',
+            }}
+          >
+            <span className="material-symbols-outlined text-[14px]">tips_and_updates</span>
+            <span>{labels[language].hint}</span>
+            <span className="text-[10px]">({hintsRemaining})</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

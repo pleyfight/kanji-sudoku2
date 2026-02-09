@@ -8,8 +8,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Zen Old Mincho"', '"MS Mincho"', 'serif'],
-        sans: ['"Zen Kaku Gothic New"', '"Yu Gothic"', 'sans-serif'],
+        serif: ['"Playfair Display"', '"Times New Roman"', 'serif'],
+        kanji: ['"Noto Serif JP"', '"Hiragino Mincho ProN"', 'serif'],
+        sans: ['"Inter"', '"Segoe UI"', 'sans-serif'],
       },
       colors: {
         // Light/Dark mode dynamic colors

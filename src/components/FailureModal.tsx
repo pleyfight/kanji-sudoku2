@@ -1,4 +1,4 @@
-// Failure Modal with Liquid Glass styling
+// Failure Modal
 import React from 'react';
 
 interface FailureModalProps {
@@ -33,11 +33,9 @@ export const FailureModal: React.FC<FailureModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-lg animate-fade-in" />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-lg" />
 
-            {/* Panel */}
-            <div className="relative w-full max-w-sm glass rounded-3xl p-8 text-center animate-slide-up">
+            <div className="relative w-full max-w-sm rounded-2xl p-8 text-center surface-panel">
                 {/* Icon */}
                 <div className="text-6xl mb-4">??</div>
 
@@ -58,15 +56,15 @@ export const FailureModal: React.FC<FailureModalProps> = ({
                 <div className="flex flex-col gap-3">
                     <button
                         onClick={onRetry}
-                        className="w-full py-3 rounded-xl font-semibold transition-all hover:shadow-xl active:scale-98"
-                        style={{ background: 'var(--error)', color: 'white' }}
+                        className="w-full py-3 rounded-xl font-semibold"
+                        style={{ background: 'var(--error)', color: '#ffffff' }}
                     >
                         {labels[language].retry}
                     </button>
                     <button
                         onClick={onNewGame}
-                        className="w-full py-3 rounded-xl font-medium transition-all glass glass-hover"
-                        style={{ color: 'var(--text-secondary)' }}
+                        className="w-full py-3 rounded-xl font-medium border"
+                        style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-subtle)' }}
                     >
                         {labels[language].newGame}
                     </button>

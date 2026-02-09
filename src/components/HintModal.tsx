@@ -36,19 +36,17 @@ export const HintModal: React.FC<HintModalProps> = ({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={onClose}
         >
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-md animate-fade-in" />
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
 
-            {/* Panel */}
             <div
-                className="relative w-full max-w-sm glass rounded-3xl p-6 animate-slide-up"
+                className="relative w-full max-w-sm rounded-2xl p-6 surface-panel"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-5">
                     <div
                         className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ background: 'var(--accent)', color: 'white' }}
+                        style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
@@ -69,7 +67,7 @@ export const HintModal: React.FC<HintModalProps> = ({
 
                 {/* Hint Content */}
                 <div className="space-y-3 mb-6">
-                    <div className="glass-subtle rounded-xl p-4">
+                    <div className="surface-muted rounded-xl p-4">
                         <span
                             className="text-xs uppercase tracking-wider font-medium block mb-1"
                             style={{ color: 'var(--accent)' }}
@@ -85,7 +83,7 @@ export const HintModal: React.FC<HintModalProps> = ({
                     </div>
 
                     {hint.reading && (
-                        <div className="glass-subtle rounded-xl p-4">
+                        <div className="surface-muted rounded-xl p-4">
                             <span
                                 className="text-xs uppercase tracking-wider font-medium block mb-1"
                                 style={{ color: 'var(--text-muted)' }}
@@ -105,8 +103,8 @@ export const HintModal: React.FC<HintModalProps> = ({
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="w-full py-3 rounded-xl font-medium transition-all hover:shadow-lg active:scale-98"
-                    style={{ background: 'var(--accent)', color: 'white' }}
+                    className="w-full py-3 rounded-xl font-medium"
+                    style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
                 >
                     {labels[language].close}
                 </button>

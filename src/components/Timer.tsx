@@ -7,6 +7,8 @@ interface TimerProps {
     isPaused: boolean;
     onTogglePause: () => void;
     language: 'en' | 'ja';
+    variant?: 'header' | 'panel';
+    showToggle?: boolean;
 }
 
 export const Timer: React.FC<TimerProps> = ({
@@ -14,49 +16,60 @@ export const Timer: React.FC<TimerProps> = ({
     isPaused,
     onTogglePause,
     language,
+    variant = 'panel',
+    showToggle = true,
 }) => {
     const labels = {
         en: { pause: 'Pause', resume: 'Resume' },
         ja: { pause: '一時停止', resume: '再開' },
     };
 
+    const isHeader = variant === 'header';
+
     return (
-        <div className="flex items-center gap-3 glass rounded-2xl px-5 py-3">
+        <div
+            className={
+                isHeader
+                    ? 'flex items-center gap-3 px-4 py-1.5 rounded-full border'
+                    : 'surface-panel flex items-center gap-3 rounded-xl px-5 py-3'
+            }
+            style={isHeader ? { borderColor: 'var(--border-subtle)', background: 'var(--bg-secondary)' } : undefined}
+        >
             <div className="flex items-center gap-2">
-                <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    style={{ color: 'var(--text-muted)' }}
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                </svg>
+                <span className="material-symbols-outlined text-sm" style={{ color: 'var(--text-muted)' }}>
+                    timer
+                </span>
                 <span
-                    className="text-2xl font-mono font-semibold tabular-nums"
+                    className={`${isHeader ? 'text-lg' : 'text-2xl'} font-mono font-semibold tabular-nums`}
                     style={{ color: 'var(--text-primary)' }}
                 >
                     {formatTime(elapsedTime)}
                 </span>
             </div>
 
-            <button
-                onClick={onTogglePause}
-                className={`
-          px-4 py-1.5 rounded-xl text-sm font-medium transition-all
-          ${isPaused
-                        ? 'bg-accent text-white shadow-lg hover:shadow-xl'
-                        : 'glass-subtle glass-hover'}
-        `}
-                style={!isPaused ? { color: 'var(--text-secondary)' } : undefined}
-            >
-                {isPaused ? labels[language].resume : labels[language].pause}
-            </button>
+            {showToggle && (
+                <button
+                    onClick={onTogglePause}
+                    className={
+                        isHeader
+                            ? 'rounded-full border px-2.5 py-1 text-xs font-semibold'
+                            : 'px-4 py-1.5 rounded-xl text-sm font-medium'
+                    }
+                    style={{
+                        color: isPaused ? 'var(--accent-contrast)' : 'var(--text-secondary)',
+                        borderColor: isPaused ? 'transparent' : 'var(--border-subtle)',
+                        background: isPaused ? 'var(--accent)' : 'transparent',
+                    }}
+                >
+                    {isHeader ? (
+                        <span className="material-symbols-outlined text-sm">
+                            {isPaused ? 'play_arrow' : 'pause'}
+                        </span>
+                    ) : (
+                        <span>{isPaused ? labels[language].resume : labels[language].pause}</span>
+                    )}
+                </button>
+            )}
         </div>
     );
 };

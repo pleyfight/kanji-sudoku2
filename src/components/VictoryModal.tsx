@@ -46,11 +46,9 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-lg animate-fade-in" />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-lg" />
 
-            {/* Panel */}
-            <div className="relative w-full max-w-sm glass rounded-3xl p-8 text-center animate-slide-up">
+            <div className="relative w-full max-w-sm rounded-2xl p-8 text-center surface-panel">
                 {/* Celebration Icon */}
                 <div className="text-6xl mb-4">🎉</div>
 
@@ -71,7 +69,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     {/* Score */}
-                    <div className="glass-subtle rounded-xl p-4">
+                    <div className="surface-muted rounded-xl p-4">
                         <span
                             className="text-xs uppercase tracking-wider block mb-1"
                             style={{ color: 'var(--text-muted)' }}
@@ -87,7 +85,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                     </div>
 
                     {/* Time */}
-                    <div className="glass-subtle rounded-xl p-4">
+                    <div className="surface-muted rounded-xl p-4">
                         <span
                             className="text-xs uppercase tracking-wider block mb-1"
                             style={{ color: 'var(--text-muted)' }}
@@ -103,7 +101,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                     </div>
 
                     {/* Words */}
-                    <div className="glass-subtle rounded-xl p-4">
+                    <div className="surface-muted rounded-xl p-4">
                         <span
                             className="text-xs uppercase tracking-wider block mb-1"
                             style={{ color: 'var(--text-muted)' }}
@@ -119,7 +117,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                     </div>
 
                     {/* Hints */}
-                    <div className="glass-subtle rounded-xl p-4">
+                    <div className="surface-muted rounded-xl p-4">
                         <span
                             className="text-xs uppercase tracking-wider block mb-1"
                             style={{ color: 'var(--text-muted)' }}
@@ -138,8 +136,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 {/* New Game Button */}
                 <button
                     onClick={onNewGame}
-                    className="w-full py-4 rounded-xl font-semibold text-lg transition-all hover:shadow-xl active:scale-98"
-                    style={{ background: 'var(--accent)', color: 'white' }}
+                    className="w-full py-4 rounded-xl font-semibold text-lg"
+                    style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
                 >
                     {labels[language].newGame}
                 </button>

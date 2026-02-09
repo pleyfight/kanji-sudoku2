@@ -49,10 +49,14 @@ export const Cell: React.FC<CellProps> = ({
       <div
         className={`
           relative w-full h-full aspect-square flex items-center justify-center
-          ${isRightBorder ? 'border-r-2 border-r-black/20 dark:border-r-white/20' : 'border-r border-r-black/10 dark:border-r-white/10'}
-          ${isBottomBorder ? 'border-b-2 border-b-black/20 dark:border-b-white/20' : 'border-b border-b-black/10 dark:border-b-white/10'}
+          ${isRightBorder ? 'border-r-[3px]' : 'border-r'}
+          ${isBottomBorder ? 'border-b-[3px]' : 'border-b'}
         `}
-        style={{ background: 'var(--bg-glass)' }}
+        style={{
+          background: 'var(--bg-panel-muted)',
+          borderRightColor: 'var(--grid-line)',
+          borderBottomColor: 'var(--grid-line)',
+        }}
       >
         <span style={{ color: 'var(--text-muted)' }} className="text-xl">?</span>
       </div>
@@ -63,21 +67,22 @@ export const Cell: React.FC<CellProps> = ({
     <div
       onClick={isEditable ? onClick : undefined}
       className={`
-        relative w-full h-full aspect-square flex items-center justify-center 
-        select-none transition-all duration-200
-        ${isRightBorder ? 'border-r-2 border-r-black/20 dark:border-r-white/20' : 'border-r border-r-black/10 dark:border-r-white/10'}
-        ${isBottomBorder ? 'border-b-2 border-b-black/20 dark:border-b-white/20' : 'border-b border-b-black/10 dark:border-b-white/10'}
+        sudoku-cell relative w-full h-full aspect-square select-none transition-all duration-200
+        ${isRightBorder ? 'border-r-[3px]' : 'border-r'}
+        ${isBottomBorder ? 'border-b-[3px]' : 'border-b'}
         ${isEditable ? 'cursor-pointer' : 'cursor-default'}
-        ${isSelected ? 'glow z-10' : isEditable ? 'hover:bg-white/30 dark:hover:bg-white/5' : ''}
+        ${isSelected ? 'cell-selected' : isEditable ? 'hover:bg-[var(--cell-hover)]' : ''}
       `}
       style={{
+        borderRightColor: 'var(--grid-line)',
+        borderBottomColor: 'var(--grid-line)',
         background: isSelected
-          ? 'rgba(59, 130, 246, 0.15)'
+          ? 'var(--cell-selected)'
           : !isValid && value !== null
-            ? 'rgba(239, 68, 68, 0.1)'
+            ? 'color-mix(in srgb, var(--error) 10%, transparent)'
             : isKana
-              ? 'rgba(0, 0, 0, 0.03)'
-              : 'transparent',
+              ? 'color-mix(in srgb, var(--grid-line) 4%, transparent)'
+              : 'var(--cell-bg)',
       }}
     >
       {displaySymbol !== null ? (
@@ -91,10 +96,10 @@ export const Cell: React.FC<CellProps> = ({
             color: !isValid && !isRevealed
               ? 'var(--error)'
               : isKana
-                ? 'var(--text-muted)'  // Kana is muted
+                ? 'var(--cell-given)'
                 : isRevealed
-                  ? 'var(--text-primary)'  // Revealed kanji is primary
-                  : 'var(--accent)',  // User-entered kanji is accent
+                  ? 'var(--text-primary)'
+                  : 'var(--cell-user)',
           }}
         >
           {displaySymbol}
