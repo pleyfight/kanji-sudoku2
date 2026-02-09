@@ -135,7 +135,8 @@ function AppContent() {
   };
 
   const isLoading = !state.puzzle || state.currentBoard.length === 0;
-  const displaySymbols = state.puzzle?.symbols || [];
+  const puzzle = state.puzzle;
+  const displaySymbols = puzzle?.symbols || [];
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
   const shortcutKeys = useMemo(() => {
     return [
@@ -243,9 +244,9 @@ function AppContent() {
                   "Zen is not some kind of excitement, but concentration on our usual everyday routine."
                 </div>
               </div>
-              {state.difficulty !== 'expert' && (
+              {state.difficulty !== 'expert' && puzzle && (
                 <WordList
-                  foundWords={state.puzzle.vocabulary.map(w => ({
+                  foundWords={puzzle.vocabulary.map(w => ({
                     word: { word: w.word, reading: w.reading, meaning: w.meaning },
                     cells: [],
                     direction: 'row' as const,
@@ -262,7 +263,7 @@ function AppContent() {
                   {labels.puzzle} #{state.puzzleId}
                 </span>
                 <div className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                  ({state.puzzle.title})
+                  ({puzzle?.title})
                 </div>
               </div>
 
@@ -381,7 +382,7 @@ function AppContent() {
                 </h3>
                 <div className="surface-muted rounded-sm p-2">
                   <Controls
-                    kanjiList={state.puzzle.symbols}
+                    kanjiList={puzzle?.symbols ?? []}
                     onInput={(num) => {
                       actions.inputValue(num);
                       if (isMobile) setShowMobileKanjiBox(false);
@@ -490,9 +491,9 @@ function AppContent() {
         language={state.language}
       />
 
-      {showMobileKanjiBox && isMobile && state.difficulty !== 'expert' && state.puzzle && (
+      {showMobileKanjiBox && isMobile && state.difficulty !== 'expert' && puzzle && (
         <KanjiHoverBox
-          kanjiList={state.puzzle.symbols}
+          kanjiList={puzzle.symbols}
           onSelect={(num) => {
             actions.inputValue(num);
             setShowMobileKanjiBox(false);
