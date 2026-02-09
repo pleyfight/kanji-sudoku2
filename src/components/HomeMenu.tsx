@@ -152,7 +152,7 @@ export function HomeMenu({ onSelectDifficulty, language, settingsSlot }: HomeMen
             <footer className="w-full max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>
                 <span>© 2024 Kudoku. Redefining the classics.</span>
                 <div className="flex items-center gap-6">
-                    <button>Twitter</button>
+                    <a href="https://bsky.app/" target="_blank" rel="noreferrer">Bluesky</a>
                     <button>Discord</button>
                 </div>
             </footer>
