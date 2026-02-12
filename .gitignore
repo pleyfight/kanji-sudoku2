@@ -25,3 +25,16 @@ dist-ssr
 
 # Corpora downloads
 /data/jesc/
+
+# Build & lint output logs
+build_error.txt
+build_full.txt
+build_full_2.txt
+lint_full.txt
+lint_output.txt
+
+# Design reference images
+mobile_reference_design/
+
+# Review / planning docs
+review/

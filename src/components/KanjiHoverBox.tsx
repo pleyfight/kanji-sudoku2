@@ -1,7 +1,7 @@
 // KanjiHoverBox - Mobile-only kanji selection popup
 // Appears when tapping a blank cell in Easy, Medium, Hard modes
-// 3×3 grid layout with pop-in animation
-import React from 'react';
+// Positioned absolutely over the grid, not fixed to viewport
+import React, { useEffect, useRef, useState } from 'react';
 
 interface KanjiHoverBoxProps {
     kanjiList: string[];
@@ -29,7 +29,23 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
     onNoteToggle,
     language,
 }) => {
-    if (!selectedCell) return null;
+    const boxRef = useRef<HTMLDivElement>(null);
+    const [topPos, setTopPos] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (!selectedCell) return;
+
+        // Find the grid container and position the popup centered over it
+        const gridEl = document.querySelector('.mobile-grid-container');
+        if (gridEl) {
+            const gridRect = gridEl.getBoundingClientRect();
+            // Position the popup centered vertically over the grid (absolute in page coords)
+            const gridCenterY = gridRect.top + window.scrollY + gridRect.height / 2;
+            setTopPos(gridCenterY);
+        }
+    }, [selectedCell]);
+
+    if (!selectedCell || topPos === null) return null;
 
     const l = labels[language];
 
@@ -42,16 +58,23 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                 style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
             />
 
-            {/* Hover Box */}
+            {/* Hover Box — positioned absolutely in page flow, centered over grid */}
             <div
-                className="fixed left-1/2 -translate-x-1/2 z-50 p-4 rounded-xl kanji-hover-popup"
+                ref={boxRef}
+                className="kanji-hover-popup"
                 style={{
-                    bottom: '12vh',
+                    position: 'absolute',
+                    top: topPos,
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 50,
+                    padding: '16px',
+                    borderRadius: '12px',
                     maxWidth: '88vw',
-                    width: '300px',
+                    width: '280px',
                     background: 'var(--bg-panel)',
                     border: '1px solid var(--border-subtle)',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
                 }}
             >
                 {/* Selected cell indicator */}

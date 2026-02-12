@@ -245,37 +245,44 @@ textarea,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: 10px 0;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .mobile-game-title {
   font-family: 'Noto Serif JP', Georgia, serif;
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   font-style: italic;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .mobile-game-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .mobile-timer-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 4px;
+  padding: 5px 10px;
   border-radius: 9999px;
   border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
+  white-space: nowrap;
 }
 
 .mobile-timer-text {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -285,10 +292,11 @@ textarea,
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .mobile-icon-btn:active {
@@ -1231,6 +1239,7 @@ textarea,
     opacity: 0;
     transform: translate(-50%, 0) scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
