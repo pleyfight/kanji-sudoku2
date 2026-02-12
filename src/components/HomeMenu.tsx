@@ -98,20 +98,22 @@ export function HomeMenu({ onSelectDifficulty, language, settingsSlot }: HomeMen
                         {t.subtitle}
                     </p>
 
-                    <div className="mt-10 flex flex-col items-center gap-6">
-                        <button
-                            onClick={() => setShowPicker(true)}
-                            className="px-12 py-4 text-sm font-black tracking-[0.2em] uppercase"
-                            style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
-                        >
-                            {t.play}
-                        </button>
-                        <div className="flex items-center gap-6 text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: 'var(--text-muted)' }}>
-                            <button>{t.daily}</button>
-                            <span className="w-1 h-1 rounded-full" style={{ background: 'var(--text-muted)' }}></span>
-                            <button>{t.leaderboard}</button>
+                    {!showPicker && (
+                        <div className="mt-10 flex flex-col items-center gap-6">
+                            <button
+                                onClick={() => setShowPicker(true)}
+                                className="px-12 py-4 text-sm font-black tracking-[0.2em] uppercase"
+                                style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
+                            >
+                                {t.play}
+                            </button>
+                            <div className="flex items-center gap-6 text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                                <button>{t.daily}</button>
+                                <span className="w-1 h-1 rounded-full" style={{ background: 'var(--text-muted)' }}></span>
+                                <button>{t.leaderboard}</button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {showPicker && (
