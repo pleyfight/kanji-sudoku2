@@ -11,6 +11,12 @@ import { KanjiHoverBox } from './components/KanjiHoverBox';
 import { LoadingScreen } from './components/LoadingScreen';
 import { GameHeader } from './components/GameHeader';
 import { GameSidePanel } from './components/GameSidePanel';
+import { MobileGameView } from './components/MobileGameView';
+import { MobileLogin } from './components/MobileLogin';
+import { MobileProfile } from './components/MobileProfile';
+import { MobileLeaderboard } from './components/MobileLeaderboard';
+import { MobileSettings } from './components/MobileSettings';
+import { MobileBottomNav, type MobileView } from './components/MobileBottomNav';
 import { useGameState, type Difficulty } from './lib/gameState';
 import { useIsMobile } from './hooks/useIsMobile';
 import { LABELS } from './lib/labels';
@@ -23,7 +29,7 @@ function AppContent() {
   const [currentHint, setCurrentHint] = useState<{ meaning: string; reading: string } | null>(null);
   const [puzzleInput, setPuzzleInput] = useState('');
   const [solutionStatus, setSolutionStatus] = useState<'idle' | 'correct' | 'incorrect'>('idle');
-  const [view, setView] = useState<'home' | 'game'>('home');
+  const [view, setView] = useState<MobileView>('home');
   const [pendingPuzzleId, setPendingPuzzleId] = useState<number | null>(null);
   const [pendingDifficulty, setPendingDifficulty] = useState<Difficulty | null>(null);
   const [showDifficultyConfirm, setShowDifficultyConfirm] = useState(false);
@@ -118,11 +124,173 @@ function AppContent() {
     setView('home');
   };
 
+  const handleMobileNavigate = (target: MobileView) => {
+    if (target === 'game' && (!state.puzzle || state.currentBoard.length === 0)) {
+      // Start a new game if navigating to game without one active
+      actions.startNewGame(state.difficulty);
+    }
+    setView(target);
+  };
+
+  const handleMobileCellClick = (row: number, col: number) => {
+    actions.selectCell(row, col);
+    const cellData = state.puzzle?.grid[row][col];
+    if (cellData && !cellData.isRevealed && !cellData.isKana) {
+      if (state.difficulty === 'expert') {
+        setTimeout(() => mobileExpertInputRef.current?.focus(), 50);
+      } else {
+        setShowMobileKanjiBox(true);
+      }
+    }
+  };
+
   const isLoading = !state.puzzle || state.currentBoard.length === 0;
   const puzzle = state.puzzle;
   const displaySymbols = puzzle?.symbols || [];
 
 
+  // --- Mobile view routing ---
+  if (isMobile) {
+    if (state.isLoading) {
+      return <LoadingScreen labels={labels} />;
+    }
+
+    // Mobile settings overlay (can appear on top of any view)
+    if (view === 'settings') {
+      return (
+        <MobileSettings
+          onClose={() => setView('home')}
+        />
+      );
+    }
+
+    // Mobile login
+    if (view === 'login') {
+      return (
+        <>
+          <MobileLogin
+            onLogin={() => setView('home')}
+            onNavigateHome={() => setView('home')}
+            settingsSlot={
+              <Settings
+                language={state.language}
+                onLanguageChange={actions.setLanguage}
+              />
+            }
+          />
+          <MobileBottomNav activeView={view} onNavigate={handleMobileNavigate} />
+        </>
+      );
+    }
+
+    // Mobile profile
+    if (view === 'profile') {
+      return (
+        <>
+          <MobileProfile
+            onSettingsOpen={() => setView('settings')}
+            onNavigateHome={() => setView('home')}
+          />
+          <MobileBottomNav activeView={view} onNavigate={handleMobileNavigate} />
+        </>
+      );
+    }
+
+    // Mobile leaderboard
+    if (view === 'leaderboard') {
+      return (
+        <>
+          <MobileLeaderboard onBack={() => setView('home')} />
+          <MobileBottomNav activeView={view} onNavigate={handleMobileNavigate} />
+        </>
+      );
+    }
+
+    // Mobile game view
+    if (view === 'game') {
+      const isGameLoading = !state.puzzle || state.currentBoard.length === 0;
+      if (isGameLoading) {
+        return (
+          <div className="flex h-screen items-center justify-center">
+            <div className="text-xl animate-pulse" style={{ color: 'var(--text-muted)' }}>
+              {labels.loading}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <>
+          <MobileGameView
+            state={state}
+            actions={actions}
+            labels={labels}
+            onBackToMenu={handleBackToMenu}
+            onCheckSolution={handleCheckSolution}
+            onRestartGame={handleRestartGame}
+            solutionStatus={solutionStatus}
+            onSettingsOpen={() => setView('settings')}
+            onProfileOpen={() => setView('profile')}
+            onCellClick={handleMobileCellClick}
+          />
+
+          {showMobileKanjiBox && state.difficulty !== 'expert' && state.puzzle && (
+            <KanjiHoverBox
+              kanjiList={state.puzzle.symbols}
+              onSelect={(num) => {
+                actions.inputValue(num);
+                setShowMobileKanjiBox(false);
+              }}
+              onDelete={() => {
+                actions.deleteValue();
+                setShowMobileKanjiBox(false);
+              }}
+              onClose={() => setShowMobileKanjiBox(false)}
+              selectedCell={state.selectedCell}
+              isNoteMode={state.isNoteMode}
+              onNoteToggle={actions.toggleNoteMode}
+              language={state.language}
+            />
+          )}
+
+          <HintModal
+            isOpen={showHint}
+            hint={currentHint}
+            onClose={() => setShowHint(false)}
+            language={state.language}
+          />
+
+          <VictoryModal
+            isOpen={state.isComplete}
+            score={state.score}
+            elapsedTime={state.elapsedTime}
+            wordsFound={state.foundWords.length}
+            hintsUsed={state.hintsUsed}
+            onNewGame={() => actions.startNewGame()}
+            language={state.language}
+          />
+        </>
+      );
+    }
+
+    // Mobile home (default)
+    return (
+      <>
+        <HomeMenu
+          onSelectDifficulty={handleDifficultySelect}
+          language={state.language}
+          settingsSlot={
+            <Settings
+              language={state.language}
+              onLanguageChange={actions.setLanguage}
+            />
+          }
+        />
+        <MobileBottomNav activeView={view} onNavigate={handleMobileNavigate} />
+      </>
+    );
+  }
+
+  // --- Desktop layout (unchanged) ---
   return (
     <div className="min-h-screen flex flex-col">
       {view === 'game' ? (

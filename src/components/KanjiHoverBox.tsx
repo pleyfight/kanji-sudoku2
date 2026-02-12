@@ -1,5 +1,6 @@
 // KanjiHoverBox - Mobile-only kanji selection popup
 // Appears when tapping a blank cell in Easy, Medium, Hard modes
+// 3×3 grid layout with pop-in animation
 import React from 'react';
 
 interface KanjiHoverBoxProps {
@@ -38,31 +39,39 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
             <div
                 className="fixed inset-0 z-40"
                 onClick={onClose}
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
             />
 
             {/* Hover Box */}
             <div
-                className="fixed left-1/2 -translate-x-1/2 z-50 p-3 rounded-xl surface-panel"
+                className="fixed left-1/2 -translate-x-1/2 z-50 p-4 rounded-xl kanji-hover-popup"
                 style={{
-                    bottom: '10vh',
-                    maxWidth: '90vw',
-                    width: '320px',
+                    bottom: '12vh',
+                    maxWidth: '88vw',
+                    width: '300px',
+                    background: 'var(--bg-panel)',
+                    border: '1px solid var(--border-subtle)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
                 }}
             >
                 {/* Selected cell indicator */}
-                <div className="text-center text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
-                    Row {selectedCell.row + 1}, Column {selectedCell.col + 1}
+                <div className="text-center text-xs mb-3 font-semibold" style={{ color: 'var(--text-muted)' }}>
+                    Row {selectedCell.row + 1}, Col {selectedCell.col + 1}
                 </div>
 
-                {/* Kanji Grid - 5 columns */}
+                {/* Kanji Grid - 3×3 */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
                     {kanjiList.map((kanji, index) => (
                         <button
                             key={index}
                             onClick={() => onSelect(index + 1)}
-                            className="aspect-square text-2xl font-serif border rounded-sm transition-all active:scale-95"
-                            style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+                            className="aspect-square flex items-center justify-center text-2xl rounded-lg border transition-all active:scale-95"
+                            style={{
+                                borderColor: 'var(--border-subtle)',
+                                background: 'var(--bg-secondary)',
+                                color: 'var(--text-primary)',
+                                fontFamily: "'Noto Serif JP', Georgia, serif",
+                            }}
                         >
                             {kanji}
                         </button>
@@ -74,10 +83,10 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                     {/* Note toggle */}
                     <button
                         onClick={onNoteToggle}
-                        className="flex-1 py-2 px-3 text-sm font-bold rounded-sm border"
+                        className="flex-1 py-2.5 px-3 text-xs font-bold rounded-lg border"
                         style={{
                             borderColor: 'var(--border-subtle)',
-                            background: isNoteMode ? 'var(--accent)' : 'var(--bg-panel)',
+                            background: isNoteMode ? 'var(--accent)' : 'var(--bg-secondary)',
                             color: isNoteMode ? 'var(--accent-contrast)' : 'var(--text-primary)',
                         }}
                     >
@@ -87,8 +96,8 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                     {/* Delete */}
                     <button
                         onClick={onDelete}
-                        className="flex-1 py-2 px-3 text-sm font-bold rounded-sm border transition-all active:scale-95"
-                        style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-panel)', color: 'var(--text-primary)' }}
+                        className="flex-1 py-2.5 px-3 text-xs font-bold rounded-lg border transition-all active:scale-95"
+                        style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                     >
                         ⌫ {l.delete}
                     </button>
@@ -96,7 +105,7 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                     {/* Close */}
                     <button
                         onClick={onClose}
-                        className="py-2 px-4 text-sm font-bold rounded-sm"
+                        className="py-2.5 px-4 text-xs font-bold rounded-lg"
                         style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
                     >
                         ✕
