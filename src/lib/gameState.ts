@@ -5,13 +5,21 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     getRandomPuzzle,
     getPuzzleById,
-    markPuzzleSkipped
+    markPuzzleSkipped,
+    initializePuzzles
 } from '../data/puzzles';
-import type { Puzzle, Difficulty, CellData } from '../data/puzzles';
+import type { Puzzle, Difficulty } from '../data/puzzles';
+import {
+    isCellEditable,
+    buildExpertSlots,
+    isCellCorrect as isCorrectValueHelper,
+    isBoardComplete
+} from './sudoku';
 
 // Configuration and utilities from extracted hooks
 import { formatTime } from '../hooks/useTimer';
 import { SCORE_CONFIG } from '../hooks/useScore';
+import { logger } from './logger';
 import { HINTS_BY_DIFFICULTY } from '../hooks/useHints';
 import { safeStorage } from './safeStorage';
 
@@ -49,6 +57,9 @@ export interface GameState {
     expertSlots: string[];
     isFailed: boolean;
 
+    // Loading
+    isLoading: boolean;
+
     // Settings
     language: Language;
     isNoteMode: boolean;
@@ -83,29 +94,7 @@ export interface GameActions {
     setDifficulty: (diff: Difficulty) => void;
 }
 
-// Check if a cell is editable (kanji blank, not revealed)
-function isCellEditable(cellData: CellData): boolean {
-    return !cellData.isKana && !cellData.isRevealed;
-}
-
-function buildExpertSlots(puzzle: Puzzle): string[] {
-    if (puzzle.difficulty !== 'expert') {
-        return [];
-    }
-    const slots: string[] = Array.from({ length: 9 }, () => '');
-    const used = new Set<string>();
-    let index = 0;
-    puzzle.grid.forEach((row) => {
-        row.forEach((cell) => {
-            if (cell.isRevealed && !cell.isKana && !used.has(cell.symbol) && index < slots.length) {
-                slots[index] = cell.symbol;
-                used.add(cell.symbol);
-                index += 1;
-            }
-        });
-    });
-    return slots;
-}
+// Custom hook for game state
 
 // Custom hook for game state
 export function useGameState(): [GameState, GameActions] {
@@ -113,6 +102,7 @@ export function useGameState(): [GameState, GameActions] {
     const [puzzleId, setPuzzleId] = useState<number | null>(null);
     const [currentBoard, setCurrentBoard] = useState<(number | null)[][]>([]);
     const [notes, setNotes] = useState<number[][][]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [difficulty, setDifficultyState] = useState<Difficulty>('easy');
     const [isComplete, setIsComplete] = useState(false);
@@ -134,16 +124,7 @@ export function useGameState(): [GameState, GameActions] {
     const [isNoteMode, setIsNoteMode] = useState(false);
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
 
-    const resolveSymbol = useCallback((value: number | null, slotsOverride?: string[]) => {
-        if (!puzzle || value === null) return null;
-        const symbols = difficulty === 'expert' ? (slotsOverride ?? expertSlots) : puzzle.symbols;
-        return symbols[value - 1] ?? null;
-    }, [puzzle, difficulty, expertSlots]);
 
-    const expectedSymbolFor = useCallback((row: number, col: number) => {
-        if (!puzzle) return null;
-        return puzzle.symbols[puzzle.solution[row][col] - 1] ?? null;
-    }, [puzzle]);
 
     const isCorrectValue = useCallback((
         value: number | null,
@@ -151,13 +132,9 @@ export function useGameState(): [GameState, GameActions] {
         col: number,
         slotsOverride?: string[]
     ) => {
-        if (puzzle?.grid?.[row]?.[col]?.isKana) {
-            return true;
-        }
-        const actual = resolveSymbol(value, slotsOverride);
-        const expected = expectedSymbolFor(row, col);
-        return Boolean(actual && expected && actual === expected);
-    }, [resolveSymbol, expectedSymbolFor, puzzle]);
+        if (!puzzle) return false;
+        return isCorrectValueHelper(value, row, col, puzzle, expertSlots, slotsOverride);
+    }, [puzzle, expertSlots]);
 
     // Timer effect
     useEffect(() => {
@@ -232,7 +209,7 @@ export function useGameState(): [GameState, GameActions] {
         // Mark current puzzle as skipped if we're switching mid-game
         if (puzzleId && !isComplete) {
             markPuzzleSkipped(puzzleId);
-            console.log(`[Kudoko] Marked puzzle #${puzzleId} as skipped`);
+            logger.info('game', `Marked puzzle #${puzzleId} as skipped`);
         }
         const p = getRandomPuzzle(diff);
         initializePuzzle(p);
@@ -243,16 +220,21 @@ export function useGameState(): [GameState, GameActions] {
         initializePuzzle(puzzle);
     }, [puzzle, initializePuzzle]);
 
-    // Initialize on mount - use ref to ensure this only runs once
+    // Initialize on mount - load puzzles async, then start first game
     const hasInitialized = useRef(false);
     useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
-            // Use queueMicrotask to avoid synchronous setState warning
-            queueMicrotask(() => {
-                const p = getRandomPuzzle('easy');
-                initializePuzzle(p);
-            });
+            initializePuzzles()
+                .then(() => {
+                    const p = getRandomPuzzle('easy');
+                    initializePuzzle(p);
+                    setIsLoading(false);
+                })
+                .catch((err) => {
+                    logger.error('init', 'Failed to load puzzles', { error: String(err) });
+                    setIsLoading(false);
+                });
         }
     }, [initializePuzzle]);
 
@@ -307,16 +289,7 @@ export function useGameState(): [GameState, GameActions] {
         newBoard[row][col] = num;
         setCurrentBoard(newBoard);
 
-        let complete = true;
-        for (let r = 0; r < 9; r++) {
-            for (let c = 0; c < 9; c++) {
-                if (!isCorrectValue(newBoard[r][c], r, c, slots)) {
-                    complete = false;
-                    break;
-                }
-            }
-            if (!complete) break;
-        }
+        const complete = isBoardComplete(newBoard, puzzle, slots);
 
         if (complete) {
             setIsComplete(true);
@@ -333,7 +306,6 @@ export function useGameState(): [GameState, GameActions] {
             return newNotes;
         });
 
-        // Award points for correct placement
         if (isCorrect && !wasCorrect) {
             setScore(prev => prev + SCORE_CONFIG.correctCell[difficulty]);
         }
@@ -509,6 +481,7 @@ export function useGameState(): [GameState, GameActions] {
         hintsUsed,
         expertSlots,
         isFailed,
+        isLoading,
         language,
         isNoteMode,
         selectedCell,

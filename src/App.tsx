@@ -1,18 +1,21 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Settings } from './components/Settings';
 import { Cell } from './components/Cell';
 import { Controls } from './components/Controls';
-import { Timer } from './components/Timer';
 import { ScoreBoard } from './components/ScoreBoard';
-import { WordList } from './components/WordList';
 import { HintModal } from './components/HintModal';
 import { VictoryModal } from './components/VictoryModal';
 import { HomeMenu } from './components/HomeMenu';
 import { KanjiHoverBox } from './components/KanjiHoverBox';
+import { LoadingScreen } from './components/LoadingScreen';
+import { GameHeader } from './components/GameHeader';
+import { GameSidePanel } from './components/GameSidePanel';
 import { useGameState, type Difficulty } from './lib/gameState';
 import { useIsMobile } from './hooks/useIsMobile';
 import { LABELS } from './lib/labels';
+import { isCellValid } from './lib/validation';
+import { getDifficultyFromId } from './data/puzzles';
 
 function AppContent() {
   const [state, actions] = useGameState();
@@ -31,32 +34,10 @@ function AppContent() {
 
   const labels = LABELS[state.language];
 
-  const isCellValid = (row: number, col: number, val: number | null): boolean => {
-    if (val === null) return true;
-    if (state.difficulty === 'expert') return true;
-
-    const board = state.currentBoard;
-
-    for (let i = 0; i < 9; i++) {
-      if (i !== col && board[row][i] === val) return false;
-    }
-
-    for (let i = 0; i < 9; i++) {
-      if (i !== row && board[i][col] === val) return false;
-    }
-
-    const startRow = Math.floor(row / 3) * 3;
-    const startCol = Math.floor(col / 3) * 3;
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        const r = startRow + i;
-        const c = startCol + j;
-        if ((r !== row || c !== col) && board[r][c] === val) return false;
-      }
-    }
-
-    return true;
-  };
+  // Show loading state while puzzles are being fetched
+  if (state.isLoading) {
+    return <LoadingScreen labels={labels} />;
+  }
 
   const handleHintRequest = () => {
     const hint = actions.requestHint();
@@ -66,13 +47,6 @@ function AppContent() {
     }
   };
 
-  const getDifficultyFromId = (id: number): Difficulty | null => {
-    if (id >= 1001 && id <= 11000) return 'easy';
-    if (id >= 11001 && id <= 21000) return 'medium';
-    if (id >= 21001 && id <= 31000) return 'hard';
-    if (id >= 31001 && id <= 41000) return 'expert';
-    return null;
-  };
 
   const handlePuzzleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 5);
@@ -147,56 +121,22 @@ function AppContent() {
   const isLoading = !state.puzzle || state.currentBoard.length === 0;
   const puzzle = state.puzzle;
   const displaySymbols = puzzle?.symbols || [];
-  const difficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
-  const shortcutKeys = useMemo(() => {
-    return [
-      { label: 'Input', key: '1-9' },
-      { label: 'Notes', key: 'N' },
-      { label: 'Hint', key: 'H' },
-      { label: 'Clear', key: 'Del' },
-    ];
-  }, []);
+
 
   return (
     <div className="min-h-screen flex flex-col">
       {view === 'game' ? (
-        <header className="border-b border-black/10 dark:border-white/10 bg-[var(--bg-panel)] sticky top-0 z-50">
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <button
-                onClick={handleBackToMenu}
-                className="font-serif text-2xl italic font-bold tracking-tight"
-                style={{ color: 'var(--accent)' }}
-              >
-                Kudoku
-              </button>
-              <nav className="flex items-center space-x-6 text-sm font-semibold h-full">
-                {difficulties.map((diff) => (
-                  <button
-                    key={diff}
-                    onClick={() => actions.setDifficulty(diff)}
-                    className={`${state.difficulty === diff ? 'tab-active' : 'tab-inactive'} py-5`}
-                  >
-                    {labels[diff]}
-                  </button>
-                ))}
-              </nav>
-            </div>
-            <div className="flex items-center gap-6">
-              <Timer
-                elapsedTime={state.elapsedTime}
-                isPaused={state.isPaused}
-                onTogglePause={actions.togglePause}
-                language={state.language}
-                variant="header"
-              />
-              <Settings
-                language={state.language}
-                onLanguageChange={actions.setLanguage}
-              />
-            </div>
-          </div>
-        </header>
+        <GameHeader
+          difficulty={state.difficulty}
+          elapsedTime={state.elapsedTime}
+          isPaused={state.isPaused}
+          language={state.language}
+          labels={labels}
+          onBackToMenu={handleBackToMenu}
+          onDifficultyChange={actions.setDifficulty}
+          onTogglePause={actions.togglePause}
+          onLanguageChange={actions.setLanguage}
+        />
       ) : null}
 
       <main className={view === 'game' ? 'flex-grow flex justify-center py-10 px-6' : 'flex-grow flex justify-center'}>
@@ -219,52 +159,12 @@ function AppContent() {
           </div>
         ) : (
           <div className="max-w-[1400px] w-full grid grid-cols-1 lg:grid-cols-[240px_1fr_260px] gap-10 items-start">
-            <aside className="flex flex-col">
-              <div className="sidebar-section">
-                <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase mb-4" style={{ color: 'var(--text-muted)' }}>
-                  How to Play
-                </h3>
-                <div className="text-xs leading-relaxed space-y-3" style={{ color: 'var(--text-secondary)' }}>
-                  <p>
-                    Fill the 9x9 grid so that each row, column, and 3x3 box contains all Kanji from{' '}
-                    <span className="font-bold" style={{ color: 'var(--accent)' }}>一</span> to{' '}
-                    <span className="font-bold" style={{ color: 'var(--accent)' }}>九</span>.
-                  </p>
-                  <p>Click a cell to select it, then use the keypad or keyboard numbers 1-9 to input the Kanji.</p>
-                </div>
-              </div>
-              <div className="sidebar-section">
-                <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase mb-4" style={{ color: 'var(--text-muted)' }}>
-                  Quick Shortcuts
-                </h3>
-                <ul className="text-[11px] space-y-2" style={{ color: 'var(--text-muted)' }}>
-                  {shortcutKeys.map((shortcut) => (
-                    <li key={shortcut.label} className="flex justify-between">
-                      <span>{shortcut.label}</span>
-                      <kbd className="px-1 rounded border" style={{ color: 'var(--text-primary)', borderColor: 'var(--border-subtle)', background: 'var(--bg-secondary)' }}>
-                        {shortcut.key}
-                      </kbd>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="sidebar-section">
-                <div className="p-4 rounded border-l-2 text-[11px] leading-relaxed italic" style={{ color: 'var(--text-muted)', borderColor: 'var(--accent)', background: 'var(--bg-secondary)' }}>
-                  "Zen is not some kind of excitement, but concentration on our usual everyday routine."
-                </div>
-              </div>
-              {state.difficulty !== 'expert' && puzzle && (
-                <WordList
-                  foundWords={puzzle.vocabulary.map(w => ({
-                    word: { word: w.word, reading: w.reading, meaning: w.meaning },
-                    cells: [],
-                    direction: 'row' as const,
-                  }))}
-                  language={state.language}
-                  variant="sidebar"
-                />
-              )}
-            </aside>
+            <GameSidePanel
+              difficulty={state.difficulty}
+              puzzle={puzzle}
+              language={state.language}
+              labels={labels}
+            />
 
             <div className="flex flex-col items-center gap-6">
               <div className="text-center">
@@ -303,7 +203,7 @@ function AppContent() {
                           state.selectedCell?.row === rowIndex &&
                           state.selectedCell?.col === colIndex
                         }
-                        isValid={isCellValid(rowIndex, colIndex, val)}
+                        isValid={isCellValid(state.currentBoard, rowIndex, colIndex, val, state.difficulty)}
                         notes={state.notes[rowIndex][colIndex]}
                         symbols={displaySymbols}
                         isPaused={state.isPaused}
@@ -364,14 +264,14 @@ function AppContent() {
                     style={state.isNoteMode ? { color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' } : undefined}
                   >
                     <span className="material-symbols-outlined text-[14px]">edit_note</span>
-                    Pencil Mode
+                    {labels.pencilMode}
                   </button>
                   <button
                     onClick={handleHintRequest}
                     className="action-btn flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[14px]">tips_and_updates</span>
-                    Hint ({state.hintsRemaining})
+                    {labels.hint} ({state.hintsRemaining})
                   </button>
                 </div>
                 <div className="flex gap-3">
@@ -379,14 +279,14 @@ function AppContent() {
                     onClick={handleNewGame}
                     className="action-btn"
                   >
-                    New Game
+                    {labels.newGame}
                   </button>
                   <button
                     onClick={handleRestartGame}
                     className="action-btn"
                     style={{ color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 35%, transparent)' }}
                   >
-                    Restart Game
+                    {labels.restartGame}
                   </button>
                 </div>
               </div>
@@ -395,7 +295,7 @@ function AppContent() {
             <aside className="flex flex-col">
               <div className="sidebar-section">
                 <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase mb-4" style={{ color: 'var(--text-muted)' }}>
-                  Kanji Keypad
+                  {labels.kanjiKeypad}
                 </h3>
                 <div className="surface-muted rounded-sm p-2">
                   <Controls
@@ -425,13 +325,13 @@ function AppContent() {
                   className="w-full py-3 mt-4 text-[10px] font-bold uppercase tracking-widest rounded-sm border"
                   style={{ color: 'var(--text-primary)', borderColor: 'var(--border-subtle)', background: 'var(--bg-panel)' }}
                 >
-                  Clear Cell
+                  {labels.clearCell}
                 </button>
               </div>
 
               <div className="sidebar-section">
                 <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase mb-4" style={{ color: 'var(--text-muted)' }}>
-                  Game Stats
+                  {labels.gameStats}
                 </h3>
                 <ScoreBoard
                   score={state.score}
@@ -475,14 +375,14 @@ function AppContent() {
                     color: 'var(--accent-contrast)',
                   }}
                 >
-                  Check Solution
+                  {labels.checkSolution}
                 </button>
                 {solutionStatus !== 'idle' && (
                   <p
                     className="mt-3 text-[11px] font-semibold"
                     style={{ color: solutionStatus === 'correct' ? 'var(--success)' : 'var(--error)' }}
                   >
-                    {solutionStatus === 'correct' ? 'Looking good so far.' : 'There are mistakes to fix.'}
+                    {solutionStatus === 'correct' ? labels.lookingGood : labels.mistakesToFix}
                   </p>
                 )}
               </div>
@@ -534,7 +434,7 @@ function AppContent() {
             style={{ borderColor: 'var(--border-subtle)' }}
           >
             <h2 className="text-xl font-bold mb-4 text-center" style={{ color: 'var(--text-primary)' }}>
-              Switch Difficulty?
+              {labels.switchDifficulty}
             </h2>
             <p className="mb-6 text-center" style={{ color: 'var(--text-secondary)' }}>
               Puzzle #{pendingPuzzleId} is a <strong style={{ color: 'var(--accent)' }}>{labels[pendingDifficulty]}</strong> puzzle.

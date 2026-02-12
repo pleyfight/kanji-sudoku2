@@ -10,6 +10,6 @@ describe('smoke', () => {
         language="en"
       />
     );
-    expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /play now/i })).toBeInTheDocument();
   });
 });

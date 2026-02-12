@@ -1,12 +1,10 @@
+// Puzzle Loader — Async fetch from public/data/puzzles/
+// Replaces the previous import.meta.glob({ eager: true }) approach that bundled ~162MB of JSON.
+
 import { createCell } from './types';
-import type { Puzzle, PuzzleDefinition } from './types';
+import type { Puzzle, PuzzleDefinition, Difficulty } from './types';
 
-type PuzzleModule = { default: PuzzleDefinition[] | PuzzleDefinition };
-
-const puzzleModules = import.meta.glob('../../puzzle-data/*.json', { eager: true }) as Record<
-    string,
-    PuzzleModule
->;
+const DIFFICULTY_FILES: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
 
 let cachedPuzzles: Puzzle[] | null = null;
 
@@ -31,18 +29,31 @@ function toPuzzle(definition: PuzzleDefinition): Puzzle {
     };
 }
 
-export function loadPuzzles(): Puzzle[] {
+/**
+ * Load all puzzles asynchronously by fetching JSON from public/data/puzzles/.
+ * Results are cached — subsequent calls return the cached array immediately.
+ */
+export async function loadPuzzlesAsync(): Promise<Puzzle[]> {
     if (cachedPuzzles) {
         return cachedPuzzles;
     }
 
-    const definitions: PuzzleDefinition[] = Object.values(puzzleModules).flatMap((module) => {
-        const data = module.default;
-        return Array.isArray(data) ? data : [data];
-    });
+    const responses = await Promise.all(
+        DIFFICULTY_FILES.map(async (diff) => {
+            const url = `${import.meta.env.BASE_URL}data/puzzles/${diff}.json`;
+            const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error(`Failed to fetch ${diff} puzzles: ${res.status} ${res.statusText}`);
+            }
+            const data: PuzzleDefinition[] | PuzzleDefinition = await res.json();
+            return Array.isArray(data) ? data : [data];
+        })
+    );
+
+    const definitions = responses.flat();
 
     if (definitions.length === 0) {
-        throw new Error('No puzzle definitions found in src/puzzle-data.');
+        throw new Error('No puzzle definitions found in public/data/puzzles/.');
     }
 
     cachedPuzzles = definitions.map(toPuzzle).sort((a, b) => a.id - b.id);

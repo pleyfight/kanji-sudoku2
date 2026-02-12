@@ -76,10 +76,11 @@ export function createCell(
 }
 
 // Helper to get difficulty from puzzle ID
-export function getDifficultyFromId(id: number): Difficulty {
-    if (id >= 1001 && id <= 1999) return 'easy';
-    if (id >= 2001 && id <= 2999) return 'medium';
-    if (id >= 3001 && id <= 3999) return 'hard';
-    if (id >= 4001 && id <= 4999) return 'expert';
-    return 'easy';
+// Ranges must match PUZZLE_ID_RANGES above
+export function getDifficultyFromId(id: number): Difficulty | null {
+    if (id >= PUZZLE_ID_RANGES.easy.min && id <= PUZZLE_ID_RANGES.easy.max) return 'easy';
+    if (id >= PUZZLE_ID_RANGES.medium.min && id <= PUZZLE_ID_RANGES.medium.max) return 'medium';
+    if (id >= PUZZLE_ID_RANGES.hard.min && id <= PUZZLE_ID_RANGES.hard.max) return 'hard';
+    if (id >= PUZZLE_ID_RANGES.expert.min && id <= PUZZLE_ID_RANGES.expert.max) return 'expert';
+    return null;
 }

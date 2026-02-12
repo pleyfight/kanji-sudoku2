@@ -1,21 +1,24 @@
 // Puzzle Index - Aggregates all puzzles and provides lookup functions
 // Enhanced with skip scoring: skipped puzzles are deprioritized in future selections
+//
+// IMPORTANT: Call initializePuzzles() before using any lookup functions.
+// All lookups throw if puzzles have not been initialized.
 
-import { loadPuzzles } from './loader';
+import { loadPuzzlesAsync } from './loader';
 import { type Puzzle, type Difficulty } from './types';
 import { safeStorage } from '../../lib/safeStorage';
+import { logger } from '../../lib/logger';
 
-// All puzzles combined
-export const ALL_PUZZLES: Puzzle[] = loadPuzzles();
-
-// Puzzle map for quick lookup by ID
-const puzzleMap = new Map<number, Puzzle>();
+// Internal state — populated by initializePuzzles()
+let allPuzzles: Puzzle[] = [];
+let puzzleMap = new Map<number, Puzzle>();
 const puzzlesByDifficulty: Record<Difficulty, Puzzle[]> = {
     easy: [],
     medium: [],
     hard: [],
     expert: [],
 };
+let _isReady = false;
 
 // Shuffle bag state - cycles through all puzzles before repeating
 const shuffleBags: Record<Difficulty, Puzzle[]> = {
@@ -77,34 +80,70 @@ function weightedShuffle(items: Puzzle[]): Puzzle[] {
     return weighted.map(w => w.puzzle);
 }
 
-// Initialize skip scores from localStorage
-loadSkipScores();
+function assertReady(): void {
+    if (!_isReady) {
+        throw new Error('[Kudoku] Puzzles not initialized. Call initializePuzzles() first.');
+    }
+}
 
-// Build puzzle maps
-ALL_PUZZLES.forEach((p) => {
-    puzzleMap.set(p.id, p);
-    puzzlesByDifficulty[p.difficulty].push(p);
-});
+/**
+ * Initialize puzzles by fetching from public/data/puzzles/.
+ * Must be called (and awaited) before any lookup functions.
+ * Safe to call multiple times — subsequent calls are no-ops.
+ */
+export async function initializePuzzles(): Promise<void> {
+    if (_isReady) return;
 
-// Log puzzle counts per difficulty for verification
-console.log('[Kudoko] Puzzle Pool Isolation:');
-console.log(`  Easy: ${puzzlesByDifficulty.easy.length} puzzles (IDs: ${puzzlesByDifficulty.easy[0]?.id}-${puzzlesByDifficulty.easy[puzzlesByDifficulty.easy.length - 1]?.id})`);
-console.log(`  Medium: ${puzzlesByDifficulty.medium.length} puzzles (IDs: ${puzzlesByDifficulty.medium[0]?.id}-${puzzlesByDifficulty.medium[puzzlesByDifficulty.medium.length - 1]?.id})`);
-console.log(`  Hard: ${puzzlesByDifficulty.hard.length} puzzles (IDs: ${puzzlesByDifficulty.hard[0]?.id}-${puzzlesByDifficulty.hard[puzzlesByDifficulty.hard.length - 1]?.id})`);
-console.log(`  Expert: ${puzzlesByDifficulty.expert.length} puzzles (IDs: ${puzzlesByDifficulty.expert[0]?.id}-${puzzlesByDifficulty.expert[puzzlesByDifficulty.expert.length - 1]?.id})`);
+    const puzzles = await loadPuzzlesAsync();
+    allPuzzles = puzzles;
+    puzzleMap = new Map<number, Puzzle>();
+
+    // Reset difficulty buckets
+    puzzlesByDifficulty.easy = [];
+    puzzlesByDifficulty.medium = [];
+    puzzlesByDifficulty.hard = [];
+    puzzlesByDifficulty.expert = [];
+
+    // Build puzzle maps
+    allPuzzles.forEach((p) => {
+        puzzleMap.set(p.id, p);
+        puzzlesByDifficulty[p.difficulty].push(p);
+    });
+
+    // Load skip scores from localStorage
+    loadSkipScores();
+
+    _isReady = true;
+
+    // Log puzzle counts per difficulty for verification
+    logger.info('puzzles', 'Puzzle pool initialized', {
+        easy: puzzlesByDifficulty.easy.length,
+        medium: puzzlesByDifficulty.medium.length,
+        hard: puzzlesByDifficulty.hard.length,
+        expert: puzzlesByDifficulty.expert.length,
+    });
+}
+
+/** Check if puzzles have been loaded and are ready for use. */
+export function isPuzzlesReady(): boolean {
+    return _isReady;
+}
 
 // Get puzzle by ID
 export function getPuzzleById(id: number): Puzzle | undefined {
+    assertReady();
     return puzzleMap.get(id);
 }
 
 // Get all puzzles for a difficulty
 export function getPuzzlesByDifficulty(difficulty: Difficulty): Puzzle[] {
+    assertReady();
     return puzzlesByDifficulty[difficulty] ?? puzzlesByDifficulty.easy;
 }
 
 // Get a random puzzle for a difficulty (uses weighted shuffle bag)
 export function getRandomPuzzle(difficulty: Difficulty): Puzzle {
+    assertReady();
     const pool = getPuzzlesByDifficulty(difficulty);
     if (pool.length === 0) {
         throw new Error(`No puzzles available for difficulty: ${difficulty}`);
@@ -114,7 +153,7 @@ export function getRandomPuzzle(difficulty: Difficulty): Puzzle {
     if (shuffleBags[difficulty].length !== pool.length || shuffleIndices[difficulty] >= shuffleBags[difficulty].length) {
         shuffleBags[difficulty] = weightedShuffle(pool);
         shuffleIndices[difficulty] = 0;
-        console.log(`[Kudoko] Reshuffled ${difficulty} bag (${pool.length} puzzles)`);
+        logger.info('puzzles', `Reshuffled ${difficulty} bag`, { count: pool.length });
     }
 
     const puzzle = shuffleBags[difficulty][shuffleIndices[difficulty]];
@@ -124,19 +163,21 @@ export function getRandomPuzzle(difficulty: Difficulty): Puzzle {
 
 // Get puzzle count by difficulty
 export function getPuzzleCount(difficulty: Difficulty): number {
+    assertReady();
     return getPuzzlesByDifficulty(difficulty).length;
 }
 
 // Get all puzzle IDs for a difficulty
 export function getPuzzleIds(difficulty: Difficulty): number[] {
+    assertReady();
     return getPuzzlesByDifficulty(difficulty).map(p => p.id);
 }
 
 // Check if a puzzle ID exists
 export function puzzleExists(id: number): boolean {
+    assertReady();
     return puzzleMap.has(id);
 }
 
 // Re-export types
 export * from './types';
-

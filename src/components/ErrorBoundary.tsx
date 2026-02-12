@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { logger } from '../lib/logger';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -17,7 +18,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     // Surface unexpected UI failures in dev tooling.
-    console.error('UI error boundary caught an error:', error, info);
+    logger.error('ui', 'Error boundary caught an error', {
+      error: error.message,
+      stack: error.stack ?? '',
+      componentStack: info.componentStack ?? '',
+    });
   }
 
   render() {

@@ -1,10 +1,8 @@
-// Score hook - extracted from useGameState following SRP
-// Manages game scoring, word bonuses, and time bonuses
+// Score configuration — used by gameState.ts for scoring calculations.
+// The useScore hook was extracted but never integrated; only SCORE_CONFIG is kept.
 
-import { useState, useCallback } from 'react';
 import type { Difficulty } from '../data/puzzles';
 
-// Scoring configuration - extracted from gameState.ts
 export const SCORE_CONFIG = {
     correctCell: {
         easy: 10,
@@ -25,88 +23,3 @@ export const SCORE_CONFIG = {
         expert: { threshold: 1200, bonus: 1000 },
     } as Record<Difficulty, { threshold: number; bonus: number }>,
 };
-
-export interface FoundWord {
-    word: string;
-    meaning: string;
-    reading: string;
-    cells: { row: number; col: number }[];
-}
-
-export interface ScoreState {
-    score: number;
-    foundWords: FoundWord[];
-}
-
-export interface ScoreActions {
-    addPoints: (points: number) => void;
-    subtractPoints: (points: number) => void;
-    addCorrectCellPoints: (difficulty: Difficulty) => void;
-    addWordBonus: (word: FoundWord) => void;
-    applyTimeBonus: (difficulty: Difficulty, elapsedTime: number) => void;
-    applyHintPenalty: () => void;
-    resetScore: () => void;
-}
-
-/**
- * Hook for managing game score and found words.
- * Extracted from useGameState to follow Single Responsibility Principle.
- */
-export function useScore(): [ScoreState, ScoreActions] {
-    const [score, setScore] = useState(0);
-    const [foundWords, setFoundWords] = useState<FoundWord[]>([]);
-
-    const addPoints = useCallback((points: number) => {
-        setScore(prev => prev + points);
-    }, []);
-
-    const subtractPoints = useCallback((points: number) => {
-        setScore(prev => Math.max(0, prev - points));
-    }, []);
-
-    const addCorrectCellPoints = useCallback((difficulty: Difficulty) => {
-        setScore(prev => prev + SCORE_CONFIG.correctCell[difficulty]);
-    }, []);
-
-    const addWordBonus = useCallback((word: FoundWord) => {
-        setFoundWords(prev => [...prev, word]);
-        const length = word.word.length;
-        const bonus = SCORE_CONFIG.wordBonus[length] ?? 0;
-        if (bonus > 0) {
-            setScore(prev => prev + bonus);
-        }
-    }, []);
-
-    const applyTimeBonus = useCallback((difficulty: Difficulty, elapsedTime: number) => {
-        const config = SCORE_CONFIG.timeBonus[difficulty];
-        if (elapsedTime < config.threshold) {
-            setScore(prev => prev + config.bonus);
-        }
-    }, []);
-
-    const applyHintPenalty = useCallback(() => {
-        setScore(prev => Math.max(0, prev - SCORE_CONFIG.hintPenalty));
-    }, []);
-
-    const resetScore = useCallback(() => {
-        setScore(0);
-        setFoundWords([]);
-    }, []);
-
-    const state: ScoreState = {
-        score,
-        foundWords,
-    };
-
-    const actions: ScoreActions = {
-        addPoints,
-        subtractPoints,
-        addCorrectCellPoints,
-        addWordBonus,
-        applyTimeBonus,
-        applyHintPenalty,
-        resetScore,
-    };
-
-    return [state, actions];
-}

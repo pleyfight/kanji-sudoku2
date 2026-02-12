@@ -3,14 +3,15 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { logger } from './lib/logger'
 
 if (typeof window !== 'undefined') {
   window.addEventListener('error', (event) => {
-    console.error('Unhandled window error:', event.error ?? event.message);
+    logger.error('init', 'Unhandled window error', { error: String(event.error ?? event.message) });
   });
 
   window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason);
+    logger.error('init', 'Unhandled promise rejection', { reason: String(event.reason) });
   });
 }
 

@@ -63,10 +63,10 @@
   - file_storage: none
   - background_jobs: none
 - Quality, security, observability:
-  - logging_expectations
-  - apm_or_log_tools
-  - security_requirements
-  - compliance_constraints
+  - logging_expectations: Console logging for dev-level observability; structured logs deferred until a logging backend is chosen.
+  - apm_or_log_tools: None (frontend-only); future candidates include Sentry or LogRocket.
+  - security_requirements: No auth or PII; XSS mitigated by React's default escaping; localStorage access hardened via safeStorage wrapper.
+  - compliance_constraints: None (no user accounts, no payment processing, no PII collection).
 - Delivery process:
   - repo_state: active development
   - ci_cd_required: GitHub Actions
@@ -150,6 +150,8 @@
 - Minor: new_feature_or_non_breaking_correction
 - Patch: bug_fix_or_security_fix
 - Requirement: Every completed step must declare version impact and rationale.
+- Current version: 0.1.0
+- Version rationale: Initial playable MVP — puzzle selection, board play, hints, scoring, bilingual UI, theme switching all functional.
 
 ## Quality Gate
 
@@ -255,3 +257,13 @@
 - Files referenced: package.json, vite.config.ts, tsconfig.app.json, src/test/setup.ts, src/test/smoke.test.tsx.
 - Tests run: npm run test:run (queued), npx vitest run --reporter verbose (queued), npx vitest run --pool=forks (queued), npx vitest run --pool=vm (error), DEBUG=vitest* npx vitest run --reporter verbose (queued).
 - Version history: not declared yet for this change.
+
+### 2026-02-12 (Document Implementation)
+
+- Decisions: Filled blank discovery fields; bumped version to 0.1.0; synced task_priority.md and task_status.md; reprioritized bundle size from LOW to HIGH.
+- Assumptions: Console logging acceptable for dev; no backend logging needed yet; sudoku.ts and boardGenerator.ts confirmed dead code (not imported anywhere).
+- Questions and answers: User approved implementation plan for PRD/task docs.
+- Completed steps: PRD discovery fields filled; version declared; task_priority completed section populated; 5 new tasks added from code review; task_status synced.
+- Files referenced: review/PRD.md, review/task_priority.md, review/task_status.md.
+- Tests run: none (documentation-only changes).
+- Version history: 0.1.0 — initial playable MVP version declared.

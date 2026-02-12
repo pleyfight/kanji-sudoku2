@@ -202,7 +202,17 @@
   }
 }
 
-* {
+/* Scoped transitions — interactive elements only (avoids layout thrash on non-interactive elements) */
+button,
+a,
+input,
+select,
+textarea,
+.sudoku-cell,
+.kanji-key,
+.action-btn,
+.tab-active,
+.tab-inactive {
   transition-property: background-color, border-color, color, box-shadow, transform;
   transition-duration: 0.2s;
   transition-timing-function: ease;

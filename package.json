@@ -1,7 +1,7 @@
 {
   "name": "kudoko",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "predev": "npm run validate:puzzles && npm run validate:sentences",
@@ -9,6 +9,7 @@
     "prebuild": "npm run validate:puzzles && npm run validate:sentences",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "typecheck": "tsc -b --noEmit",
     "audit": "npm audit --audit-level=high",
     "test": "vitest",
     "test:run": "vitest run",

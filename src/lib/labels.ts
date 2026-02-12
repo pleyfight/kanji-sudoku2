@@ -15,6 +15,18 @@ export interface AppLabels {
     paused: string;
     puzzle: string;
     goToPuzzle: string;
+    howToPlay: string;
+    quickShortcuts: string;
+    pencilMode: string;
+    hint: string;
+    restartGame: string;
+    kanjiKeypad: string;
+    gameStats: string;
+    clearCell: string;
+    checkSolution: string;
+    lookingGood: string;
+    mistakesToFix: string;
+    switchDifficulty: string;
 }
 
 export const LABELS: Record<Language, AppLabels> = {
@@ -30,6 +42,18 @@ export const LABELS: Record<Language, AppLabels> = {
         paused: 'Paused',
         puzzle: 'Puzzle',
         goToPuzzle: 'Go to #',
+        howToPlay: 'How to Play',
+        quickShortcuts: 'Quick Shortcuts',
+        pencilMode: 'Pencil Mode',
+        hint: 'Hint',
+        restartGame: 'Restart Game',
+        kanjiKeypad: 'Kanji Keypad',
+        gameStats: 'Game Stats',
+        clearCell: 'Clear Cell',
+        checkSolution: 'Check Solution',
+        lookingGood: 'Looking good so far.',
+        mistakesToFix: 'There are mistakes to fix.',
+        switchDifficulty: 'Switch Difficulty?',
     },
     ja: {
         title: '漢字数独',
@@ -43,6 +67,18 @@ export const LABELS: Record<Language, AppLabels> = {
         paused: '一時停止中',
         puzzle: 'パズル',
         goToPuzzle: '番号へ',
+        howToPlay: '遊び方',
+        quickShortcuts: 'ショートカット',
+        pencilMode: 'メモモード',
+        hint: 'ヒント',
+        restartGame: 'リスタート',
+        kanjiKeypad: '漢字キーパッド',
+        gameStats: 'ゲーム統計',
+        clearCell: 'セルをクリア',
+        checkSolution: '解答チェック',
+        lookingGood: '今のところ正解です。',
+        mistakesToFix: '修正すべき箇所があります。',
+        switchDifficulty: '難易度を変更しますか？',
     },
 };
 
