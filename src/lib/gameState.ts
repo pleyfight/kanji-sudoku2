@@ -19,7 +19,7 @@ import {
 // Configuration and utilities from extracted hooks
 import { formatTime } from '../hooks/useTimer';
 import { SCORE_CONFIG } from '../hooks/useScore';
-import { logger } from './logger';
+import { logger, LOG_EVENTS } from './logger';
 import { HINTS_BY_DIFFICULTY } from '../hooks/useHints';
 import { safeStorage } from './safeStorage';
 
@@ -152,6 +152,10 @@ export function useGameState(): [GameState, GameActions] {
     }, [isPaused, isComplete, isFailed, puzzle]);
 
     // Initialize a puzzle
+    // Complexity note:
+    //   n = 9 (board dimension), k = 9 (symbols per puzzle)
+    //   Time: O(n^2 * k) from symbol lookups while mapping the 9x9 board
+    //   Space: O(n^2) for board + notes initialization
     const initializePuzzle = useCallback((p: Puzzle) => {
         setPuzzle(p);
         setPuzzleId(p.id);
@@ -212,7 +216,13 @@ export function useGameState(): [GameState, GameActions] {
         // Mark current puzzle as skipped if we're switching mid-game
         if (puzzleId && !isComplete) {
             markPuzzleSkipped(puzzleId);
-            logger.info('game', `Marked puzzle #${puzzleId} as skipped`);
+            logger.info(
+                'game',
+                LOG_EVENTS.GAME_PUZZLE_SKIPPED,
+                `Marked puzzle #${puzzleId} as skipped`,
+                { puzzleId },
+                { puzzleId, difficulty },
+            );
         }
         const p = getRandomPuzzle(diff);
         initializePuzzle(p);
@@ -235,7 +245,12 @@ export function useGameState(): [GameState, GameActions] {
                     setIsLoading(false);
                 })
                 .catch((err) => {
-                    logger.error('init', 'Failed to load puzzles', { error: String(err) });
+                    logger.error(
+                        'init',
+                        LOG_EVENTS.PUZZLES_INIT_FAILED,
+                        'Failed to load puzzles',
+                        { error: String(err) },
+                    );
                     setIsLoading(false);
                 });
         }
@@ -262,6 +277,10 @@ export function useGameState(): [GameState, GameActions] {
         setSelectedCell(null);
     }, []);
 
+    // Complexity note (hot path):
+    //   n = 9 (board dimension)
+    //   Time: O(n^2) from board clone + completion check across all cells
+    //   Space: O(n^2) for immutable board/notes copies
     const applyValue = useCallback((
         row: number,
         col: number,
@@ -445,6 +464,10 @@ export function useGameState(): [GameState, GameActions] {
     }, [selectedCell, puzzle, hintsRemaining, difficulty, isFailed, isPaused]);
 
     // Check solution
+    // Complexity note:
+    //   n = 9 (board dimension)
+    //   Time: O(n^2) full board scan
+    //   Space: O(1) extra
     const checkSolution = useCallback((): boolean => {
         if (!puzzle) return false;
         for (let r = 0; r < 9; r++) {

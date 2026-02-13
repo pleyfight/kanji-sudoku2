@@ -1,7 +1,7 @@
 // KanjiHoverBox - Mobile-only kanji selection popup
 // Appears when tapping a blank cell in Easy, Medium, Hard modes
 // Positioned absolutely over the grid, not fixed to viewport
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 
 interface KanjiHoverBoxProps {
     kanjiList: string[];
@@ -30,19 +30,12 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
     language,
 }) => {
     const boxRef = useRef<HTMLDivElement>(null);
-    const [topPos, setTopPos] = useState<number | null>(null);
-
-    useEffect(() => {
-        if (!selectedCell) return;
-
-        // Find the grid container and position the popup centered over it
+    const topPos = useMemo(() => {
+        if (!selectedCell) return null;
         const gridEl = document.querySelector('.mobile-grid-container');
-        if (gridEl) {
-            const gridRect = gridEl.getBoundingClientRect();
-            // Position the popup centered vertically over the grid (absolute in page coords)
-            const gridCenterY = gridRect.top + window.scrollY + gridRect.height / 2;
-            setTopPos(gridCenterY);
-        }
+        if (!gridEl) return null;
+        const gridRect = gridEl.getBoundingClientRect();
+        return gridRect.top + window.scrollY + gridRect.height / 2;
     }, [selectedCell]);
 
     if (!selectedCell || topPos === null) return null;

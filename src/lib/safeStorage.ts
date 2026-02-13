@@ -1,7 +1,7 @@
 // Safe wrapper around localStorage.
 // Prevents crashes in environments where storage is unavailable (private mode, SSR, quota exceeded).
 
-import { logger } from './logger';
+import { logger, LOG_EVENTS } from './logger';
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -21,7 +21,13 @@ export const safeStorage = {
     try {
       return storage.getItem(key);
     } catch (error) {
-      logger.warn('storage', 'localStorage get failed', { error: String(error) });
+      logger.warn(
+        'storage',
+        LOG_EVENTS.STORAGE_GET_FAILED,
+        'localStorage get failed',
+        { error: String(error) },
+        { key },
+      );
       return null;
     }
   },
@@ -32,7 +38,13 @@ export const safeStorage = {
     try {
       storage.setItem(key, value);
     } catch (error) {
-      logger.warn('storage', 'localStorage set failed', { error: String(error) });
+      logger.warn(
+        'storage',
+        LOG_EVENTS.STORAGE_SET_FAILED,
+        'localStorage set failed',
+        { error: String(error) },
+        { key },
+      );
     }
   },
 
@@ -42,7 +54,13 @@ export const safeStorage = {
     try {
       storage.removeItem(key);
     } catch (error) {
-      logger.warn('storage', 'localStorage remove failed', { error: String(error) });
+      logger.warn(
+        'storage',
+        LOG_EVENTS.STORAGE_REMOVE_FAILED,
+        'localStorage remove failed',
+        { error: String(error) },
+        { key },
+      );
     }
   },
 
@@ -56,7 +74,13 @@ export const safeStorage = {
     try {
       return JSON.parse(raw) as T;
     } catch (error) {
-      logger.warn('storage', 'localStorage JSON parse failed', { error: String(error) });
+      logger.warn(
+        'storage',
+        LOG_EVENTS.STORAGE_PARSE_FAILED,
+        'localStorage JSON parse failed',
+        { error: String(error) },
+        { key },
+      );
       return null;
     }
   },
@@ -83,10 +107,22 @@ export const safeStorage = {
       if (validator(parsed)) {
         return parsed;
       }
-      logger.warn('storage', `localStorage schema validation failed for key "${key}"`);
+      logger.warn(
+        'storage',
+        LOG_EVENTS.STORAGE_SCHEMA_INVALID,
+        `localStorage schema validation failed for key "${key}"`,
+        undefined,
+        { key },
+      );
       return null;
     } catch (error) {
-      logger.warn('storage', 'localStorage JSON parse failed', { error: String(error) });
+      logger.warn(
+        'storage',
+        LOG_EVENTS.STORAGE_PARSE_FAILED,
+        'localStorage JSON parse failed',
+        { error: String(error) },
+        { key },
+      );
       return null;
     }
   },
@@ -95,7 +131,13 @@ export const safeStorage = {
     try {
       this.setItem(key, JSON.stringify(value));
     } catch (error) {
-      logger.warn('storage', 'localStorage JSON stringify failed', { error: String(error) });
+      logger.warn(
+        'storage',
+        LOG_EVENTS.STORAGE_STRINGIFY_FAILED,
+        'localStorage JSON stringify failed',
+        { error: String(error) },
+        { key },
+      );
     }
   },
 };

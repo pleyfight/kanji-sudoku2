@@ -16,6 +16,37 @@
 - Security pattern scan script added (`npm run security:check`).
 - Skip-score localStorage sanitization and clamping added.
 - Puzzle ID input validation tightened at game action boundary.
+- HIGH-002 complete:
+  - Added enforceable quality gate command (`npm run quality:gate`).
+  - CI workflow now runs the unified gate (lint, typecheck, security check, audit, unit tests, smoke test, build).
+  - Added security-boundary unit tests for skip-score sanitization and puzzle ID validation guard.
+  - Resolved lint blocker in `KanjiHoverBox` (setState-in-effect).
+- HIGH-003 complete:
+  - Added versioning policy and step-to-version impact matrix in `docs/versioning-policy.md`.
+- MEDIUM-001 complete:
+  - Added structured client logging schema (event/context/correlation ID).
+  - Documented schema in `docs/observability-schema.md`.
+- MEDIUM-002 complete:
+  - CI workflow hardened with manual dispatch, concurrency cancellation, least-privilege permissions, and job timeout.
+  - Added build artifact upload (`dist`) for CI run traceability.
+- MEDIUM-003 complete:
+  - Removed duplicated Sudoku cell validation logic from `AppContent`.
+  - App now uses shared `isCellValid` from `src/lib/validation.ts`.
+- MEDIUM-004 complete:
+  - Decomposed `AppContent` UI into focused components (`GameTopHeader`, `GameQuickShortcuts`, `GameBoardPanel`, `GameControlSidebar`).
+  - Puzzle navigation / difficulty-switch logic now uses `usePuzzleNavigation`.
+- MEDIUM-005 complete:
+  - Added complexity annotations for nontrivial game state and puzzle selection paths.
+  - Added consolidated complexity reference doc in `docs/complexity-notes.md`.
+- LOW-001 complete:
+  - Added lazy loading (`React.lazy` + `Suspense`) for game-only panels and overlay components in `src/App.tsx`.
+  - Added Vite manual vendor chunk split for `react` and `react-dom` in `vite.config.ts`.
+- LOW-002 complete:
+  - Added ADR template and initial ADR set in `docs/adr/`.
+- LOW-003 complete:
+  - Added optional enhanced security scan workflow in `.github/workflows/security-enhanced.yml`.
+  - Added OSV API lockfile scanner (`scripts/osv-audit.mjs`) and optional Snyk orchestration (`scripts/security-enhanced.mjs`).
+  - Added documentation for local/CI usage in `docs/security-enhanced-scans.md`.
 
 ## In Progress
 
@@ -23,38 +54,29 @@
 
 ## Not Started (High Priority)
 
-- HIGH-002: Add testing gate (unit + smoke) [deferred for now].
-- HIGH-003: Define versioning impact per step.
+- None.
 
 ## Not Started (Medium Priority)
 
-- MEDIUM-001: Observability schema.
-- MEDIUM-002: CI automation baseline.
-- MEDIUM-003: Deduplicate Sudoku logic.
-- MEDIUM-004: Decompose AppContent.
-- MEDIUM-005: Add complexity notes for nontrivial logic.
+- None.
 
 ## Not Started (Low Priority)
 
-- LOW-001: Code-splitting for large bundle.
-- LOW-002: ADR templates and initial ADRs.
+- None.
 
 ## Blockers
 
-- Build terminated during `npm run build` (needs rerun/investigation).
-- Vitest run stuck at "queued" (tests not executing) [ignored while testing deferred].
+- None currently.
 
 ## Latest Checks
 
 - npm run audit: pass (0 vulnerabilities).
 - npm run security:check: pass (no blocked patterns).
+- npm run security:osv: pass (no known vulnerabilities found).
+- npm run security:enhanced: pass (OSV pass; Snyk skipped without token).
 - npm run lint: pass.
-- npm run build: terminated after Vite transform stage (repro on rerun).
-- npx tsc -b + npx vite build --debug: terminated after transform (even with higher memory).
-- npx vite build --minify false: terminated after transform.
-- npx vite build (VITE_LOG_LEVEL=info): terminated after transform.
-- npm run test:run: tests queued, no execution.
-- npx vitest run --reporter verbose: tests queued, no execution.
-- npx vitest run --pool=forks: tests queued, no execution.
-- npx vitest run --pool=vm: error (invalid pool).
-- npx vitest run --reporter verbose (DEBUG=vitest*): tests queued, no execution.
+- npm run typecheck: pass.
+- npm run test:unit: pass.
+- npm run test:smoke: pass.
+- npm run build: pass.
+- npm run quality:gate: pass.

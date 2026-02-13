@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { logger, getSessionId } from '../lib/logger';
+import { logger, getSessionId, LOG_EVENTS } from '../lib/logger';
 
 describe('logger', () => {
     beforeEach(() => {
@@ -20,21 +20,25 @@ describe('logger', () => {
     describe('logger.info', () => {
         it('calls console.log with structured prefix', () => {
             const spy = vi.spyOn(console, 'log').mockImplementation(() => { });
-            logger.info('game', 'test message');
+            logger.info('game', LOG_EVENTS.GAME_PUZZLE_SKIPPED, 'test message');
             expect(spy).toHaveBeenCalledWith(
                 '[Kudoku:game]',
+                LOG_EVENTS.GAME_PUZZLE_SKIPPED,
                 'test message',
+                '',
                 '',
             );
         });
 
         it('passes data when provided', () => {
             const spy = vi.spyOn(console, 'log').mockImplementation(() => { });
-            logger.info('puzzles', 'loaded', { count: 50 });
+            logger.info('puzzles', LOG_EVENTS.PUZZLES_POOL_INITIALIZED, 'loaded', { count: 50 });
             expect(spy).toHaveBeenCalledWith(
                 '[Kudoku:puzzles]',
+                LOG_EVENTS.PUZZLES_POOL_INITIALIZED,
                 'loaded',
                 { count: 50 },
+                '',
             );
         });
     });
@@ -42,10 +46,12 @@ describe('logger', () => {
     describe('logger.warn', () => {
         it('calls console.warn with structured prefix', () => {
             const spy = vi.spyOn(console, 'warn').mockImplementation(() => { });
-            logger.warn('storage', 'quota exceeded');
+            logger.warn('storage', LOG_EVENTS.STORAGE_SET_FAILED, 'quota exceeded');
             expect(spy).toHaveBeenCalledWith(
                 '[Kudoku:storage]',
+                LOG_EVENTS.STORAGE_SET_FAILED,
                 'quota exceeded',
+                '',
                 '',
             );
         });
@@ -54,11 +60,13 @@ describe('logger', () => {
     describe('logger.error', () => {
         it('calls console.error with structured prefix', () => {
             const spy = vi.spyOn(console, 'error').mockImplementation(() => { });
-            logger.error('init', 'failed to boot', { error: 'timeout' });
+            logger.error('init', LOG_EVENTS.APP_INIT_FAILURE, 'failed to boot', { error: 'timeout' });
             expect(spy).toHaveBeenCalledWith(
                 '[Kudoku:init]',
+                LOG_EVENTS.APP_INIT_FAILURE,
                 'failed to boot',
                 { error: 'timeout' },
+                '',
             );
         });
     });
@@ -66,11 +74,13 @@ describe('logger', () => {
     describe('logger.debug', () => {
         it('calls console.debug with structured prefix', () => {
             const spy = vi.spyOn(console, 'debug').mockImplementation(() => { });
-            logger.debug('validation', 'checking cell', { row: 0, col: 1 });
+            logger.debug('validation', LOG_EVENTS.PUZZLES_BAG_RESHUFFLED, 'checking cell', { row: 0, col: 1 });
             expect(spy).toHaveBeenCalledWith(
                 '[Kudoku:validation]',
+                LOG_EVENTS.PUZZLES_BAG_RESHUFFLED,
                 'checking cell',
                 { row: 0, col: 1 },
+                '',
             );
         });
     });

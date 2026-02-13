@@ -1,0 +1,101 @@
+name: Enhanced Security Scans
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_osv:
+        description: Run OSV lockfile scan
+        required: true
+        default: true
+        type: boolean
+      run_snyk:
+        description: Run Snyk scan (requires SNYK_TOKEN secret)
+        required: true
+        default: false
+        type: boolean
+      run_codeql:
+        description: Run CodeQL analysis
+        required: true
+        default: true
+        type: boolean
+  schedule:
+    - cron: '0 7 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enhanced-security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  osv:
+    name: OSV Scan
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_osv) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Run OSV scan
+        run: npm run security:osv
+
+  snyk:
+    name: Snyk Scan
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_snyk && secrets.SNYK_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: true
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Run Snyk scan
+        run: npm run security:snyk
+
+  codeql:
+    name: CodeQL Analysis
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_codeql }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript-typescript']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3

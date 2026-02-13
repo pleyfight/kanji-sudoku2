@@ -7,7 +7,7 @@
 import { loadPuzzlesAsync } from './loader';
 import { type Puzzle, type Difficulty } from './types';
 import { safeStorage } from '../../lib/safeStorage';
-import { logger } from '../../lib/logger';
+import { logger, LOG_EVENTS } from '../../lib/logger';
 
 // Internal state — populated by initializePuzzles()
 let allPuzzles: Puzzle[] = [];
@@ -86,6 +86,10 @@ export function getSkipScore(puzzleId: number): number {
 }
 
 // Weighted shuffle: puzzles with lower skip scores come first
+// Complexity note:
+//   m = puzzles in selected difficulty
+//   Time: O(m log m) due to sort
+//   Space: O(m) weighted tuple array
 function weightedShuffle(items: Puzzle[]): Puzzle[] {
     // Create array of [puzzle, weight] where weight = 1 / (1 + skipScore)
     // Higher skip score = lower weight = later in shuffle
@@ -142,7 +146,7 @@ export async function initializePuzzles(): Promise<void> {
     _isReady = true;
 
     // Log puzzle counts per difficulty for verification
-    logger.info('puzzles', 'Puzzle pool initialized', {
+    logger.info('puzzles', LOG_EVENTS.PUZZLES_POOL_INITIALIZED, 'Puzzle pool initialized', {
         easy: puzzlesByDifficulty.easy.length,
         medium: puzzlesByDifficulty.medium.length,
         hard: puzzlesByDifficulty.hard.length,
@@ -168,6 +172,11 @@ export function getPuzzlesByDifficulty(difficulty: Difficulty): Puzzle[] {
 }
 
 // Get a random puzzle for a difficulty (uses weighted shuffle bag)
+// Complexity note:
+//   m = puzzles in selected difficulty
+//   Time: O(1) steady-state bag draw, O(m log m) when reshuffling
+//   Space: O(m) for the shuffle bag
+//   Amortized draw cost across a full bag cycle is effectively O(1)
 export function getRandomPuzzle(difficulty: Difficulty): Puzzle {
     assertReady();
     const pool = getPuzzlesByDifficulty(difficulty);
@@ -179,7 +188,13 @@ export function getRandomPuzzle(difficulty: Difficulty): Puzzle {
     if (shuffleBags[difficulty].length !== pool.length || shuffleIndices[difficulty] >= shuffleBags[difficulty].length) {
         shuffleBags[difficulty] = weightedShuffle(pool);
         shuffleIndices[difficulty] = 0;
-        logger.info('puzzles', `Reshuffled ${difficulty} bag`, { count: pool.length });
+        logger.info(
+            'puzzles',
+            LOG_EVENTS.PUZZLES_BAG_RESHUFFLED,
+            `Reshuffled ${difficulty} bag`,
+            { count: pool.length },
+            { difficulty },
+        );
     }
 
     const puzzle = shuffleBags[difficulty][shuffleIndices[difficulty]];
