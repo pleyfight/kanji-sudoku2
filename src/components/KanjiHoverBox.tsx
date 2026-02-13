@@ -30,15 +30,34 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
     language,
 }) => {
     const boxRef = useRef<HTMLDivElement>(null);
-    const topPos = useMemo(() => {
+    const popupPosition = useMemo(() => {
         if (!selectedCell) return null;
-        const gridEl = document.querySelector('.mobile-grid-container');
-        if (!gridEl) return null;
-        const gridRect = gridEl.getBoundingClientRect();
-        return gridRect.top + window.scrollY + gridRect.height / 2;
+
+        const selectedCellEl = document.querySelector('.sudoku-cell.cell-selected') as HTMLElement | null;
+        if (selectedCellEl) {
+            const selectedCellRect = selectedCellEl.getBoundingClientRect();
+            return {
+                top: selectedCellRect.top + window.scrollY + selectedCellRect.height / 2,
+                left: selectedCellRect.left + window.scrollX + selectedCellRect.width / 2,
+            };
+        }
+
+        const boardEl = document.querySelector('.mobile-grid-container, .sudoku-grid') as HTMLElement | null;
+        if (boardEl) {
+            const boardRect = boardEl.getBoundingClientRect();
+            return {
+                top: boardRect.top + window.scrollY + boardRect.height / 2,
+                left: boardRect.left + window.scrollX + boardRect.width / 2,
+            };
+        }
+
+        return {
+            top: window.scrollY + window.innerHeight / 2,
+            left: window.scrollX + window.innerWidth / 2,
+        };
     }, [selectedCell]);
 
-    if (!selectedCell || topPos === null) return null;
+    if (!selectedCell || popupPosition === null) return null;
 
     const l = labels[language];
 
@@ -57,8 +76,8 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                 className="kanji-hover-popup"
                 style={{
                     position: 'absolute',
-                    top: topPos,
-                    left: '50%',
+                    top: popupPosition.top,
+                    left: popupPosition.left,
                     transform: 'translate(-50%, -50%)',
                     zIndex: 50,
                     padding: '16px',
