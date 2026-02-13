@@ -1,6 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Settings } from './components/Settings';
+import { AuthIconButton } from './components/AuthIconButton';
 import { HomeMenu } from './components/HomeMenu';
 import { usePuzzleNavigation } from './hooks/usePuzzleNavigation';
 import { useGameState, type Difficulty } from './lib/gameState';
@@ -35,9 +36,13 @@ const LazyGameBoardPanel = lazy(() =>
 const LazyGameControlSidebar = lazy(() =>
   import('./components/GameControlSidebar').then((module) => ({ default: module.GameControlSidebar }))
 );
+const LazyLoginPage = lazy(() =>
+  import('./components/LoginPage').then((module) => ({ default: module.LoginPage }))
+);
 
 function AppContent() {
   const [state, actions] = useGameState();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [currentHint, setCurrentHint] = useState<{ meaning: string; reading: string } | null>(null);
   const [solutionStatus, setSolutionStatus] = useState<'idle' | 'correct' | 'incorrect'>('idle');
@@ -102,6 +107,22 @@ function AppContent() {
     setView('home');
   };
 
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    setView('home');
+  };
+
+  const handleContinueAsGuest = () => {
+    setIsAuthenticated(true);
+    setView('home');
+  };
+
+  const handleAuthIconClick = () => {
+    if (!isAuthenticated) return;
+    setActivePopover(null);
+    setView('home');
+  };
+
   const isLoading = !state.puzzle || state.currentBoard.length === 0;
   const puzzle = state.puzzle;
   const shortcutKeys = useMemo(() => ([
@@ -118,6 +139,30 @@ function AppContent() {
     })) ?? []
   ), [puzzle]);
 
+  if (!isAuthenticated) {
+    return (
+      <Suspense fallback={null}>
+        <LazyLoginPage
+          language={state.language}
+          onLogin={handleLogin}
+          onContinueAsGuest={handleContinueAsGuest}
+          settingsSlot={(
+            <Settings
+              language={state.language}
+              onLanguageChange={actions.setLanguage}
+            />
+          )}
+          authSlot={(
+            <AuthIconButton
+              isAuthenticated={false}
+              onClick={handleAuthIconClick}
+            />
+          )}
+        />
+      </Suspense>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {view === 'game' ? (
@@ -132,6 +177,12 @@ function AppContent() {
             onDifficultyChange={actions.setDifficulty}
             onTogglePause={actions.togglePause}
             onLanguageChange={actions.setLanguage}
+            authSlot={(
+              <AuthIconButton
+                isAuthenticated
+                onClick={handleAuthIconClick}
+              />
+            )}
           />
         </Suspense>
       ) : null}
@@ -145,6 +196,12 @@ function AppContent() {
               <Settings
                 language={state.language}
                 onLanguageChange={actions.setLanguage}
+              />
+            )}
+            authSlot={(
+              <AuthIconButton
+                isAuthenticated
+                onClick={handleAuthIconClick}
               />
             )}
           />
@@ -163,7 +220,12 @@ function AppContent() {
             </div>
           }>
             <div className="max-w-[1400px] w-full grid grid-cols-1 xl:grid-cols-[220px_minmax(0,1fr)_260px] gap-6 lg:gap-8 items-start">
-              <LazyGameQuickShortcuts shortcutKeys={shortcutKeys} />
+              <LazyGameQuickShortcuts
+                shortcutKeys={shortcutKeys}
+                onOpenRules={() => setActivePopover('rules')}
+                onOpenVocabulary={() => setActivePopover('vocabulary')}
+                puzzleWordsCount={puzzleWords.length}
+              />
 
               <LazyGameBoardPanel
                 state={state}

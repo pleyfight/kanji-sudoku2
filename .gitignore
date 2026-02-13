@@ -35,6 +35,7 @@ lint_output.txt
 
 # Design reference images
 mobile_reference_design/
+design/
 
 # Review / planning docs
 review/

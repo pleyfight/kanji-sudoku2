@@ -5,6 +5,7 @@ interface HomeMenuProps {
     onSelectDifficulty: (diff: Difficulty) => void;
     language: 'en' | 'ja';
     settingsSlot?: React.ReactNode;
+    authSlot?: React.ReactNode;
 }
 
 const LABELS = {
@@ -46,7 +47,7 @@ const LABELS = {
     },
 };
 
-export function HomeMenu({ onSelectDifficulty, language, settingsSlot }: HomeMenuProps) {
+export function HomeMenu({ onSelectDifficulty, language, settingsSlot, authSlot }: HomeMenuProps) {
     const t = LABELS[language];
     const [showPicker, setShowPicker] = useState(false);
 
@@ -83,6 +84,7 @@ export function HomeMenu({ onSelectDifficulty, language, settingsSlot }: HomeMen
                         {t.how}
                     </button>
                     {settingsSlot}
+                    {authSlot}
                 </div>
             </header>
 

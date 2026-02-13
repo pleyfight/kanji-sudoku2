@@ -13,6 +13,7 @@ interface GameTopHeaderProps {
     onDifficultyChange: (diff: Difficulty) => void;
     onTogglePause: () => void;
     onLanguageChange: (lang: Language) => void;
+    authSlot?: React.ReactNode;
 }
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
@@ -27,6 +28,7 @@ export function GameTopHeader({
     onDifficultyChange,
     onTogglePause,
     onLanguageChange,
+    authSlot,
 }: GameTopHeaderProps) {
     return (
         <header className="border-b border-black/10 dark:border-white/10 bg-[var(--bg-panel)] sticky top-0 z-50">
@@ -63,6 +65,7 @@ export function GameTopHeader({
                         language={language}
                         onLanguageChange={onLanguageChange}
                     />
+                    {authSlot}
                 </div>
             </div>
         </header>

@@ -49,22 +49,24 @@ export function GameBoardPanel({
                 </div>
             </div>
 
-            <div className="w-full flex items-center justify-center gap-2 sm:gap-3">
-                <button
-                    onClick={onOpenRules}
-                    className="px-3 sm:px-4 py-2 rounded-full border text-[11px] sm:text-xs font-bold uppercase tracking-wide"
-                    style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', background: 'var(--bg-panel)' }}
-                >
-                    How to Play
-                </button>
-                <button
-                    onClick={onOpenVocabulary}
-                    className="px-3 sm:px-4 py-2 rounded-full border text-[11px] sm:text-xs font-bold uppercase tracking-wide"
-                    style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', background: 'var(--bg-panel)' }}
-                >
-                    Vocabulary ({puzzleWordsCount})
-                </button>
-            </div>
+            {isMobile && (
+                <div className="w-full flex items-center justify-center gap-2 sm:gap-3">
+                    <button
+                        onClick={onOpenRules}
+                        className="px-3 sm:px-4 py-2 rounded-full border text-[11px] sm:text-xs font-bold uppercase tracking-wide"
+                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', background: 'var(--bg-panel)' }}
+                    >
+                        How to Play
+                    </button>
+                    <button
+                        onClick={onOpenVocabulary}
+                        className="px-3 sm:px-4 py-2 rounded-full border text-[11px] sm:text-xs font-bold uppercase tracking-wide"
+                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', background: 'var(--bg-panel)' }}
+                    >
+                        Vocabulary ({puzzleWordsCount})
+                    </button>
+                </div>
+            )}
 
             <div
                 className="relative w-full"

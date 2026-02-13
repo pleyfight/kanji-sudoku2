@@ -5,11 +5,37 @@ export interface ShortcutKey {
 
 interface GameQuickShortcutsProps {
     shortcutKeys: ShortcutKey[];
+    onOpenRules: () => void;
+    onOpenVocabulary: () => void;
+    puzzleWordsCount: number;
 }
 
-export function GameQuickShortcuts({ shortcutKeys }: GameQuickShortcutsProps) {
+export function GameQuickShortcuts({
+    shortcutKeys,
+    onOpenRules,
+    onOpenVocabulary,
+    puzzleWordsCount,
+}: GameQuickShortcutsProps) {
     return (
         <aside className="hidden xl:flex flex-col">
+            <div className="sidebar-section">
+                <div className="flex flex-col gap-2">
+                    <button
+                        onClick={onOpenRules}
+                        className="w-full px-3 py-2 rounded-full border text-[10px] font-bold uppercase tracking-wide"
+                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', background: 'var(--bg-panel)' }}
+                    >
+                        How to Play
+                    </button>
+                    <button
+                        onClick={onOpenVocabulary}
+                        className="w-full px-3 py-2 rounded-full border text-[10px] font-bold uppercase tracking-wide"
+                        style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)', background: 'var(--bg-panel)' }}
+                    >
+                        Vocabulary ({puzzleWordsCount})
+                    </button>
+                </div>
+            </div>
             <div className="sidebar-section">
                 <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase mb-4" style={{ color: 'var(--text-muted)' }}>
                     Quick Shortcuts
