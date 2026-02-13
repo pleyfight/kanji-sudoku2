@@ -262,10 +262,6 @@ function AppContent() {
               actions.inputValue(num);
               setShowMobileKanjiBox(false);
             }}
-            onDelete={() => {
-              actions.deleteValue();
-              setShowMobileKanjiBox(false);
-            }}
             onClose={() => setShowMobileKanjiBox(false)}
             selectedCell={state.selectedCell}
             isNoteMode={state.isNoteMode}

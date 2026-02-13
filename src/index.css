@@ -1237,15 +1237,21 @@ textarea,
 @keyframes kanjiPopIn {
   from {
     opacity: 0;
-    transform: translate(-50%, 0) scale(0.9);
+    transform: translate(var(--kanji-from-x, 0), var(--kanji-from-y, 0)) scale(0.35);
+  }
+
+  70% {
+    opacity: 1;
   }
 
   to {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translate(0, 0) scale(1);
   }
 }
 
 .kanji-hover-popup {
-  animation: kanjiPopIn 0.15s ease-out;
+  animation: kanjiPopIn 0.18s cubic-bezier(0.2, 0.9, 0.2, 1);
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
