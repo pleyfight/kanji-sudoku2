@@ -39,6 +39,9 @@ const LazyGameControlSidebar = lazy(() =>
 const LazyLoginPage = lazy(() =>
   import('./components/LoginPage').then((module) => ({ default: module.LoginPage }))
 );
+const LazyMobileProfile = lazy(() =>
+  import('./components/MobileProfile').then((module) => ({ default: module.MobileProfile }))
+);
 
 function AppContent() {
   const [state, actions] = useGameState();
@@ -46,7 +49,7 @@ function AppContent() {
   const [showHint, setShowHint] = useState(false);
   const [currentHint, setCurrentHint] = useState<{ meaning: string; reading: string } | null>(null);
   const [solutionStatus, setSolutionStatus] = useState<'idle' | 'correct' | 'incorrect'>('idle');
-  const [view, setView] = useState<'home' | 'game'>('home');
+  const [view, setView] = useState<'home' | 'game' | 'login' | 'profile'>('login');
   const [showMobileKanjiBox, setShowMobileKanjiBox] = useState(false);
   const [activePopover, setActivePopover] = useState<'rules' | 'vocabulary' | null>(null);
   const isMobile = useIsMobile();
@@ -118,9 +121,8 @@ function AppContent() {
   };
 
   const handleAuthIconClick = () => {
-    if (!isAuthenticated) return;
     setActivePopover(null);
-    setView('home');
+    setView(isAuthenticated ? 'profile' : 'login');
   };
 
   const isLoading = !state.puzzle || state.currentBoard.length === 0;
@@ -158,6 +160,17 @@ function AppContent() {
               onClick={handleAuthIconClick}
             />
           )}
+        />
+      </Suspense>
+    );
+  }
+
+  if (view === 'profile') {
+    return (
+      <Suspense fallback={null}>
+        <LazyMobileProfile
+          onSettingsOpen={handleBackToMenu}
+          onNavigateHome={handleBackToMenu}
         />
       </Suspense>
     );
