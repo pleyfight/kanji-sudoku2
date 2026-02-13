@@ -148,40 +148,76 @@ export function GameBoardPanel({
                 )}
             </div>
 
-            <div className="w-full max-w-[620px] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t pt-6" style={{ borderColor: 'var(--border-subtle)' }}>
-                <div className="flex flex-wrap gap-3">
+            {isMobile ? (
+                <div
+                    className="w-full max-w-[620px] grid grid-cols-4 gap-2 border-t pt-6"
+                    style={{ borderColor: 'var(--border-subtle)' }}
+                >
                     <button
                         onClick={actions.toggleNoteMode}
-                        className="action-btn flex items-center gap-2"
+                        className="action-btn flex min-w-0 items-center justify-center gap-1 px-1 py-2 text-[9px] tracking-[0.08em]"
                         style={state.isNoteMode ? { color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' } : undefined}
                     >
-                        <span className="material-symbols-outlined text-[14px]">edit_note</span>
+                        <span className="material-symbols-outlined text-[12px]">edit_note</span>
                         {labels.pencilMode}
                     </button>
                     <button
                         onClick={onHintRequest}
-                        className="action-btn flex items-center gap-2"
+                        className="action-btn flex min-w-0 items-center justify-center gap-1 px-1 py-2 text-[9px] tracking-[0.08em]"
                     >
-                        <span className="material-symbols-outlined text-[14px]">tips_and_updates</span>
+                        <span className="material-symbols-outlined text-[12px]">tips_and_updates</span>
                         {labels.hint} ({state.hintsRemaining})
                     </button>
-                </div>
-                <div className="flex flex-wrap gap-3">
                     <button
                         onClick={onNewGame}
-                        className="action-btn"
+                        className="action-btn min-w-0 px-1 py-2 text-[9px] tracking-[0.08em]"
                     >
                         {labels.newGame}
                     </button>
                     <button
                         onClick={onRestartGame}
-                        className="action-btn"
+                        className="action-btn min-w-0 px-1 py-2 text-[9px] tracking-[0.08em]"
                         style={{ color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 35%, transparent)' }}
                     >
                         {labels.restartGame}
                     </button>
                 </div>
-            </div>
+            ) : (
+                <div className="w-full max-w-[620px] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t pt-6" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <div className="flex flex-wrap gap-3">
+                        <button
+                            onClick={actions.toggleNoteMode}
+                            className="action-btn flex items-center gap-2"
+                            style={state.isNoteMode ? { color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' } : undefined}
+                        >
+                            <span className="material-symbols-outlined text-[14px]">edit_note</span>
+                            {labels.pencilMode}
+                        </button>
+                        <button
+                            onClick={onHintRequest}
+                            className="action-btn flex items-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">tips_and_updates</span>
+                            {labels.hint} ({state.hintsRemaining})
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                        <button
+                            onClick={onNewGame}
+                            className="action-btn"
+                        >
+                            {labels.newGame}
+                        </button>
+                        <button
+                            onClick={onRestartGame}
+                            className="action-btn"
+                            style={{ color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 35%, transparent)' }}
+                        >
+                            {labels.restartGame}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
