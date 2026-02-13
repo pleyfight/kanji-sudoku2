@@ -39,8 +39,8 @@ const LazyGameControlSidebar = lazy(() =>
 const LazyLoginPage = lazy(() =>
   import('./components/LoginPage').then((module) => ({ default: module.LoginPage }))
 );
-const LazyMobileProfile = lazy(() =>
-  import('./components/MobileProfile').then((module) => ({ default: module.MobileProfile }))
+const LazyProfilePage = lazy(() =>
+  import('./components/ProfilePage').then((module) => ({ default: module.ProfilePage }))
 );
 
 function AppContent() {
@@ -110,6 +110,11 @@ function AppContent() {
     setView('home');
   };
 
+  const handleStartGameView = () => {
+    setActivePopover(null);
+    setView('game');
+  };
+
   const handleLogin = () => {
     setIsAuthenticated(true);
     setView('home');
@@ -174,9 +179,9 @@ function AppContent() {
   if (view === 'profile') {
     return (
       <Suspense fallback={null}>
-        <LazyMobileProfile
-          onSettingsOpen={handleBackToMenu}
+        <LazyProfilePage
           onNavigateHome={handleBackToMenu}
+          onStartGame={handleStartGameView}
         />
       </Suspense>
     );
