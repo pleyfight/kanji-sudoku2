@@ -21,7 +21,7 @@ export const Settings: React.FC<SettingsProps> = ({
             light: 'Light',
             dark: 'Dark',
             auto: 'Auto',
-            autoHint: 'Dark 6PM-6AM',
+            autoHint: 'Uses device local time (dark 6PM-6AM)',
             language: 'Language',
         },
         ja: {
@@ -30,7 +30,7 @@ export const Settings: React.FC<SettingsProps> = ({
             light: 'ライト',
             dark: 'ダーク',
             auto: '自動',
-            autoHint: '18時〜6時はダーク',
+            autoHint: '端末のローカル時刻を使用（18時〜6時はダーク）',
             language: '言語',
         },
     };
@@ -47,11 +47,11 @@ export const Settings: React.FC<SettingsProps> = ({
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="p-2 rounded-full border"
+                className="h-10 w-10 inline-flex items-center justify-center rounded-full border leading-none shrink-0"
                 style={{ color: 'var(--text-muted)', borderColor: 'var(--border-subtle)' }}
                 aria-label={l.settings}
             >
-                <span className="material-symbols-outlined">settings</span>
+                <span className="material-symbols-outlined block text-[20px]">settings</span>
             </button>
 
             {isOpen && (

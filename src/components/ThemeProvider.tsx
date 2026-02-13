@@ -14,19 +14,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'kudoko_theme';
 
-// Check if we should use dark mode based on current time
+// Uses browser/device local time.
 function shouldUseDarkByTime(): boolean {
     const hour = new Date().getHours();
     // Dark mode between 6 PM (18:00) and 6 AM (06:00)
     return hour >= 18 || hour < 6;
 }
 
-// Check system preference
-function getSystemPreference(): boolean {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
+function getMsUntilNextThemeBoundary(now: Date = new Date()): number {
+    const next = new Date(now);
+    const hour = now.getHours();
+    const nextBoundaryHour = hour < 6 ? 6 : hour < 18 ? 18 : 30;
+    next.setHours(nextBoundaryHour, 0, 0, 0);
+    return Math.max(1, next.getTime() - now.getTime());
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -42,7 +42,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Track actual dark state (resolved from mode)
     const [isDark, setIsDark] = useState<boolean>(() => {
         if (mode === 'auto') {
-            return shouldUseDarkByTime() || getSystemPreference();
+            return shouldUseDarkByTime();
         }
         return mode === 'dark';
     });
@@ -53,7 +53,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         safeStorage.setItem(STORAGE_KEY, newMode);
     }, []);
 
-    // Effect to update isDark when mode changes or time passes
+    // Effect to update isDark when mode changes or device time crosses 06:00/18:00.
     useEffect(() => {
         const updateDarkState = () => {
             if (mode === 'light') {
@@ -61,31 +61,25 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             } else if (mode === 'dark') {
                 setIsDark(true);
             } else {
-                // Auto mode - check time and system preference
-                setIsDark(shouldUseDarkByTime() || getSystemPreference());
+                setIsDark(shouldUseDarkByTime());
             }
         };
 
         updateDarkState();
 
-        // For auto mode, check every minute
-        let interval: number | undefined;
+        let timeoutId: number | undefined;
         if (mode === 'auto') {
-            interval = window.setInterval(updateDarkState, 60000);
+            const scheduleNextUpdate = () => {
+                timeoutId = window.setTimeout(() => {
+                    updateDarkState();
+                    scheduleNextUpdate();
+                }, getMsUntilNextThemeBoundary());
+            };
+            scheduleNextUpdate();
         }
 
-        // Listen for system preference changes
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleChange = () => {
-            if (mode === 'auto') {
-                updateDarkState();
-            }
-        };
-        mediaQuery.addEventListener('change', handleChange);
-
         return () => {
-            if (interval) clearInterval(interval);
-            mediaQuery.removeEventListener('change', handleChange);
+            if (timeoutId) window.clearTimeout(timeoutId);
         };
     }, [mode]);
 

@@ -195,6 +195,9 @@ export function useGameState(): [GameState, GameActions] {
 
     // Load puzzle by ID
     const loadPuzzle = useCallback((id: number): boolean => {
+        if (!Number.isSafeInteger(id) || id <= 0) {
+            return false;
+        }
         const p = getPuzzleById(id);
         if (p) {
             initializePuzzle(p);

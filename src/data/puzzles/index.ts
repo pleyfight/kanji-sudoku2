@@ -38,10 +38,35 @@ const shuffleIndices: Record<Difficulty, number> = {
 // Persisted in localStorage to survive page refresh
 const SKIP_SCORES_KEY = 'kudoko_skip_scores';
 let skipScores: Record<number, number> = {};
+const MAX_SKIP_SCORE = 100;
+
+function clampSkipScore(value: unknown): number {
+    if (!Number.isFinite(value)) return 0;
+    const safe = Math.trunc(Number(value));
+    if (safe < 0) return 0;
+    if (safe > MAX_SKIP_SCORE) return MAX_SKIP_SCORE;
+    return safe;
+}
+
+function parseSkipScores(raw: unknown): Record<number, number> {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+        return {};
+    }
+
+    const parsed: Record<number, number> = {};
+    for (const [key, value] of Object.entries(raw)) {
+        if (!/^\d+$/.test(key)) continue;
+        const puzzleId = Number(key);
+        if (!Number.isSafeInteger(puzzleId) || !puzzleMap.has(puzzleId)) continue;
+        parsed[puzzleId] = clampSkipScore(value);
+    }
+
+    return parsed;
+}
 
 function loadSkipScores(): void {
-    const stored = safeStorage.getJSON<Record<number, number>>(SKIP_SCORES_KEY);
-    skipScores = stored ?? {};
+    const stored = safeStorage.getJSON<unknown>(SKIP_SCORES_KEY);
+    skipScores = parseSkipScores(stored);
 }
 
 function saveSkipScores(): void {
@@ -50,7 +75,8 @@ function saveSkipScores(): void {
 
 // Mark a puzzle as skipped (increases its score, pushes it to end of future shuffles)
 export function markPuzzleSkipped(puzzleId: number): void {
-    skipScores[puzzleId] = (skipScores[puzzleId] ?? 0) + 1;
+    if (!puzzleMap.has(puzzleId)) return;
+    skipScores[puzzleId] = clampSkipScore((skipScores[puzzleId] ?? 0) + 1);
     saveSkipScores();
 }
 
