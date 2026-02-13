@@ -49,7 +49,7 @@ function AppContent() {
   const [showHint, setShowHint] = useState(false);
   const [currentHint, setCurrentHint] = useState<{ meaning: string; reading: string } | null>(null);
   const [solutionStatus, setSolutionStatus] = useState<'idle' | 'correct' | 'incorrect'>('idle');
-  const [view, setView] = useState<'home' | 'game' | 'login' | 'profile'>('login');
+  const [view, setView] = useState<'home' | 'game' | 'login' | 'profile'>('home');
   const [showMobileKanjiBox, setShowMobileKanjiBox] = useState(false);
   const [activePopover, setActivePopover] = useState<'rules' | 'vocabulary' | null>(null);
   const isMobile = useIsMobile();
@@ -141,28 +141,34 @@ function AppContent() {
     })) ?? []
   ), [puzzle]);
 
-  if (!isAuthenticated) {
-    return (
-      <Suspense fallback={null}>
-        <LazyLoginPage
-          language={state.language}
-          onLogin={handleLogin}
-          onContinueAsGuest={handleContinueAsGuest}
-          settingsSlot={(
-            <Settings
-              language={state.language}
-              onLanguageChange={actions.setLanguage}
-            />
-          )}
-          authSlot={(
-            <AuthIconButton
-              isAuthenticated={false}
-              onClick={handleAuthIconClick}
-            />
-          )}
-        />
-      </Suspense>
-    );
+  const loginView = (
+    <Suspense fallback={null}>
+      <LazyLoginPage
+        language={state.language}
+        onLogin={handleLogin}
+        onContinueAsGuest={handleContinueAsGuest}
+        settingsSlot={(
+          <Settings
+            language={state.language}
+            onLanguageChange={actions.setLanguage}
+          />
+        )}
+        authSlot={(
+          <AuthIconButton
+            isAuthenticated={false}
+            onClick={handleAuthIconClick}
+          />
+        )}
+      />
+    </Suspense>
+  );
+
+  if (view === 'login' && !isAuthenticated) {
+    return loginView;
+  }
+
+  if (view === 'profile' && !isAuthenticated) {
+    return loginView;
   }
 
   if (view === 'profile') {
@@ -192,7 +198,7 @@ function AppContent() {
             onLanguageChange={actions.setLanguage}
             authSlot={(
               <AuthIconButton
-                isAuthenticated
+                isAuthenticated={isAuthenticated}
                 onClick={handleAuthIconClick}
               />
             )}
@@ -213,7 +219,7 @@ function AppContent() {
             )}
             authSlot={(
               <AuthIconButton
-                isAuthenticated
+                isAuthenticated={isAuthenticated}
                 onClick={handleAuthIconClick}
               />
             )}
