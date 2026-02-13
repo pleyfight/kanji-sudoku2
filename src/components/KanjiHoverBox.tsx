@@ -1,7 +1,7 @@
 // KanjiHoverBox - Mobile-only kanji selection popup
 // Appears when tapping a blank cell in Easy, Medium, Hard modes
-// Positioned absolutely over the grid, not fixed to viewport
-import React, { useMemo, useRef } from 'react';
+// Clamped dynamically to stay inside the viewport
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 interface KanjiHoverBoxProps {
     kanjiList: string[];
@@ -30,34 +30,76 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
     language,
 }) => {
     const boxRef = useRef<HTMLDivElement>(null);
-    const popupPosition = useMemo(() => {
+    const [popupPosition, setPopupPosition] = useState<{ left: number; top: number } | null>(null);
+    const computePopupPosition = useCallback(() => {
         if (!selectedCell) return null;
+
+        const popupEl = boxRef.current;
+        if (!popupEl) return null;
+
+        let anchorX = window.innerWidth / 2;
+        let anchorY = window.innerHeight / 2;
 
         const selectedCellEl = document.querySelector('.sudoku-cell.cell-selected') as HTMLElement | null;
         if (selectedCellEl) {
             const selectedCellRect = selectedCellEl.getBoundingClientRect();
-            return {
-                top: selectedCellRect.top + window.scrollY + selectedCellRect.height / 2,
-                left: selectedCellRect.left + window.scrollX + selectedCellRect.width / 2,
-            };
+            anchorX = selectedCellRect.left + selectedCellRect.width / 2;
+            anchorY = selectedCellRect.top + selectedCellRect.height / 2;
+        } else {
+            const boardEl = document.querySelector('.mobile-grid-container, .sudoku-grid') as HTMLElement | null;
+            if (boardEl) {
+                const boardRect = boardEl.getBoundingClientRect();
+                anchorX = boardRect.left + boardRect.width / 2;
+                anchorY = boardRect.top + boardRect.height / 2;
+            }
         }
 
-        const boardEl = document.querySelector('.mobile-grid-container, .sudoku-grid') as HTMLElement | null;
-        if (boardEl) {
-            const boardRect = boardEl.getBoundingClientRect();
-            return {
-                top: boardRect.top + window.scrollY + boardRect.height / 2,
-                left: boardRect.left + window.scrollX + boardRect.width / 2,
-            };
-        }
+        const popupRect = popupEl.getBoundingClientRect();
+        const margin = 12;
+        const maxLeft = Math.max(margin, window.innerWidth - popupRect.width - margin);
+        const maxTop = Math.max(margin, window.innerHeight - popupRect.height - margin);
+        const left = Math.min(Math.max(anchorX - popupRect.width / 2, margin), maxLeft);
+        const top = Math.min(Math.max(anchorY - popupRect.height / 2, margin), maxTop);
 
-        return {
-            top: window.scrollY + window.innerHeight / 2,
-            left: window.scrollX + window.innerWidth / 2,
-        };
+        return { left, top };
     }, [selectedCell]);
 
-    if (!selectedCell || popupPosition === null) return null;
+    useLayoutEffect(() => {
+        if (!selectedCell) return;
+        const rafId = window.requestAnimationFrame(() => {
+            const nextPosition = computePopupPosition();
+            if (nextPosition) {
+                setPopupPosition(nextPosition);
+            }
+        });
+        return () => window.cancelAnimationFrame(rafId);
+    }, [selectedCell, computePopupPosition, isNoteMode, language, kanjiList.length]);
+
+    useEffect(() => {
+        if (!selectedCell) return;
+
+        const handleViewportChange = () => {
+            const nextPosition = computePopupPosition();
+            if (nextPosition) {
+                setPopupPosition(nextPosition);
+            }
+        };
+        window.addEventListener('resize', handleViewportChange);
+        window.addEventListener('orientationchange', handleViewportChange);
+
+        const viewport = window.visualViewport;
+        viewport?.addEventListener('resize', handleViewportChange);
+        viewport?.addEventListener('scroll', handleViewportChange);
+
+        return () => {
+            window.removeEventListener('resize', handleViewportChange);
+            window.removeEventListener('orientationchange', handleViewportChange);
+            viewport?.removeEventListener('resize', handleViewportChange);
+            viewport?.removeEventListener('scroll', handleViewportChange);
+        };
+    }, [selectedCell, computePopupPosition]);
+
+    if (!selectedCell) return null;
 
     const l = labels[language];
 
@@ -70,23 +112,26 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                 style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
             />
 
-            {/* Hover Box — positioned absolutely in page flow, centered over grid */}
+            {/* Hover Box — dynamically clamped to the visible viewport */}
             <div
                 ref={boxRef}
                 className="kanji-hover-popup"
                 style={{
-                    position: 'absolute',
-                    top: popupPosition.top,
-                    left: popupPosition.left,
-                    transform: 'translate(-50%, -50%)',
+                    position: 'fixed',
+                    top: popupPosition?.top ?? -10000,
+                    left: popupPosition?.left ?? -10000,
+                    transform: 'none',
                     zIndex: 50,
                     padding: '16px',
                     borderRadius: '12px',
-                    maxWidth: '88vw',
+                    maxWidth: 'min(280px, calc(100vw - 24px))',
+                    maxHeight: 'calc(100vh - 24px)',
                     width: '280px',
                     background: 'var(--bg-panel)',
                     border: '1px solid var(--border-subtle)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+                    overflowY: 'auto',
+                    visibility: popupPosition ? 'visible' : 'hidden',
                 }}
             >
                 {/* Selected cell indicator */}
