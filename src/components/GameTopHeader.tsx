@@ -53,7 +53,7 @@ export function GameTopHeader({
                         ))}
                     </nav>
                 </div>
-                <div className="flex items-center gap-4 sm:gap-6 self-end sm:self-auto">
+                <div className="game-header-controls flex items-center gap-4 sm:gap-6 self-end sm:self-auto">
                     <Timer
                         elapsedTime={elapsedTime}
                         isPaused={isPaused}
@@ -61,11 +61,13 @@ export function GameTopHeader({
                         language={language}
                         variant="header"
                     />
-                    <Settings
-                        language={language}
-                        onLanguageChange={onLanguageChange}
-                    />
-                    {authSlot}
+                    <div className="app-header-icon-actions">
+                        <Settings
+                            language={language}
+                            onLanguageChange={onLanguageChange}
+                        />
+                        {authSlot}
+                    </div>
                 </div>
             </div>
         </header>

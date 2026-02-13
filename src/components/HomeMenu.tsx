@@ -79,12 +79,14 @@ export function HomeMenu({ onSelectDifficulty, language, settingsSlot, authSlot 
                         {t.title}
                     </span>
                 </div>
-                <div className="flex items-center gap-6">
-                    <button className="text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: 'var(--text-muted)' }}>
+                <div className="app-header-actions">
+                    <button className="app-header-link text-[10px] font-bold tracking-[0.3em] uppercase" style={{ color: 'var(--text-muted)' }}>
                         {t.how}
                     </button>
-                    {settingsSlot}
-                    {authSlot}
+                    <div className="app-header-icon-actions">
+                        {settingsSlot}
+                        {authSlot}
+                    </div>
                 </div>
             </header>
 

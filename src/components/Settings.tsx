@@ -47,11 +47,11 @@ export const Settings: React.FC<SettingsProps> = ({
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="h-10 w-10 inline-flex items-center justify-center rounded-full border leading-none shrink-0"
-                style={{ color: 'var(--text-muted)', borderColor: 'var(--border-subtle)' }}
+                className="app-icon-circle-btn"
                 aria-label={l.settings}
+                title={l.settings}
             >
-                <span className="material-symbols-outlined block text-[20px]">settings</span>
+                <span className="material-symbols-outlined app-icon-circle-glyph" aria-hidden="true">settings</span>
             </button>
 
             {isOpen && (

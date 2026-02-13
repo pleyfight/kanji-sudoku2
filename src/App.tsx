@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Settings } from './components/Settings';
 import { AuthIconButton } from './components/AuthIconButton';
@@ -8,6 +8,14 @@ import { useGameState, type Difficulty } from './lib/gameState';
 import { useIsMobile } from './hooks/useIsMobile';
 import { LABELS } from './lib/labels';
 import { isCellValid as validateCell } from './lib/validation';
+import {
+  appendPuzzleHistoryEntry,
+  loadPuzzleHistory,
+  loadUserProfileData,
+  savePuzzleHistory,
+  saveUserProfileData,
+  type UserProfileData,
+} from './lib/profile';
 
 const LazyWordList = lazy(() =>
   import('./components/WordList').then((module) => ({ default: module.WordList }))
@@ -46,6 +54,7 @@ const LazyProfilePage = lazy(() =>
 function AppContent() {
   const [state, actions] = useGameState();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [profileData, setProfileData] = useState<UserProfileData>(() => loadUserProfileData());
   const [showHint, setShowHint] = useState(false);
   const [currentHint, setCurrentHint] = useState<{ meaning: string; reading: string } | null>(null);
   const [solutionStatus, setSolutionStatus] = useState<'idle' | 'correct' | 'incorrect'>('idle');
@@ -53,6 +62,7 @@ function AppContent() {
   const [showMobileKanjiBox, setShowMobileKanjiBox] = useState(false);
   const [activePopover, setActivePopover] = useState<'rules' | 'vocabulary' | null>(null);
   const isMobile = useIsMobile();
+  const lastRecordedCompletionKeyRef = useRef<string | null>(null);
 
   const labels = LABELS[state.language];
   const {
@@ -121,7 +131,7 @@ function AppContent() {
   };
 
   const handleContinueAsGuest = () => {
-    setIsAuthenticated(true);
+    setIsAuthenticated(false);
     setView('home');
   };
 
@@ -129,6 +139,55 @@ function AppContent() {
     setActivePopover(null);
     setView(isAuthenticated ? 'profile' : 'login');
   };
+
+  const handleProfileUpdate = useCallback((nextProfile: UserProfileData) => {
+    setProfileData(nextProfile);
+    saveUserProfileData(nextProfile);
+  }, []);
+
+  const handleOpenPuzzleFromProfile = useCallback((id: number) => {
+    const loaded = actions.loadPuzzle(id);
+    if (!loaded) return;
+    setActivePopover(null);
+    setSolutionStatus('idle');
+    setView('game');
+  }, [actions]);
+
+  useEffect(() => {
+    if (!state.isComplete) {
+      lastRecordedCompletionKeyRef.current = null;
+      return;
+    }
+
+    if (!isAuthenticated || state.puzzleId === null) {
+      return;
+    }
+
+    const completionKey = `${state.puzzleId}:${state.elapsedTime}:${state.score}:${state.hintsUsed}`;
+    if (completionKey === lastRecordedCompletionKeyRef.current) {
+      return;
+    }
+
+    const existingHistory = loadPuzzleHistory();
+    const nextHistory = appendPuzzleHistoryEntry(existingHistory, {
+      puzzleId: state.puzzleId,
+      difficulty: state.difficulty,
+      elapsedTime: state.elapsedTime,
+      score: state.score,
+      hintsUsed: state.hintsUsed,
+    });
+    savePuzzleHistory(nextHistory);
+
+    lastRecordedCompletionKeyRef.current = completionKey;
+  }, [
+    isAuthenticated,
+    state.difficulty,
+    state.elapsedTime,
+    state.hintsUsed,
+    state.isComplete,
+    state.puzzleId,
+    state.score,
+  ]);
 
   const isLoading = !state.puzzle || state.currentBoard.length === 0;
   const puzzle = state.puzzle;
@@ -182,6 +241,10 @@ function AppContent() {
         <LazyProfilePage
           onNavigateHome={handleBackToMenu}
           onStartGame={handleStartGameView}
+          onOpenPuzzle={handleOpenPuzzleFromProfile}
+          profile={profileData}
+          puzzleHistory={loadPuzzleHistory()}
+          onUpdateProfile={handleProfileUpdate}
         />
       </Suspense>
     );

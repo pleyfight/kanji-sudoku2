@@ -78,11 +78,13 @@ export function LoginPage({
                     <span className="auth-login-brand-text">{t.brand}</span>
                 </button>
                 <div className="auth-login-header-actions">
-                    <button className="auth-login-header-link" onClick={onContinueAsGuest}>
+                    <button className="auth-login-header-link app-header-link" onClick={onContinueAsGuest}>
                         {t.howToPlay}
                     </button>
-                    {settingsSlot}
-                    {authSlot}
+                    <div className="app-header-icon-actions">
+                        {settingsSlot}
+                        {authSlot}
+                    </div>
                 </div>
             </header>
 
