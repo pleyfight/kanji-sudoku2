@@ -31,6 +31,14 @@ function clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
 }
 
+function getViewportSize(): { width: number; height: number } {
+    const viewport = window.visualViewport;
+    return {
+        width: viewport?.width ?? window.innerWidth,
+        height: viewport?.height ?? window.innerHeight,
+    };
+}
+
 export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
     kanjiList,
     onSelect,
@@ -50,8 +58,10 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
         const popupEl = boxRef.current;
         if (!popupEl) return null;
 
-        let anchorX = window.innerWidth / 2;
-        let anchorY = window.innerHeight / 2;
+        const viewport = getViewportSize();
+
+        let anchorX = viewport.width / 2;
+        let anchorY = viewport.height / 2;
 
         const selectedCellEl = document.querySelector('.sudoku-cell.cell-selected') as HTMLElement | null;
         if (selectedCellEl) {
@@ -67,24 +77,34 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
             }
         }
 
-        const popupRect = popupEl.getBoundingClientRect();
+        const popupWidth = popupEl.offsetWidth || popupEl.getBoundingClientRect().width;
+        const popupHeight = popupEl.offsetHeight || popupEl.getBoundingClientRect().height;
         const margin = 12;
-        const targetCenterX = anchorX;
-        const targetCenterY = window.innerHeight * 0.48;
-        const maxLeft = Math.max(margin, window.innerWidth - popupRect.width - margin);
-        const maxTop = Math.max(margin, window.innerHeight - popupRect.height - margin);
-        const left = clamp(targetCenterX - popupRect.width / 2, margin, maxLeft);
-        const top = clamp(targetCenterY - popupRect.height / 2, margin, maxTop);
-        const finalCenterX = left + popupRect.width / 2;
-        const finalCenterY = top + popupRect.height / 2;
+        const viewportCenterX = viewport.width / 2;
+        const viewportCenterY = viewport.height * 0.48;
+        const targetCenterX = viewportCenterX + (anchorX - viewportCenterX) * 0.35;
+        const targetCenterY = viewportCenterY + (anchorY - viewportCenterY) * 0.2;
+        const maxLeft = Math.max(margin, viewport.width - popupWidth - margin);
+        const maxTop = Math.max(margin, viewport.height - popupHeight - margin);
+        const left = clamp(targetCenterX - popupWidth / 2, margin, maxLeft);
+        const top = clamp(targetCenterY - popupHeight / 2, margin, maxTop);
+        const finalCenterX = left + popupWidth / 2;
+        const finalCenterY = top + popupHeight / 2;
+
+        // Keep animation start point in bounds too, so it never flashes outside screen.
+        const startScale = 0.35;
+        const halfStartWidth = (popupWidth * startScale) / 2;
+        const halfStartHeight = (popupHeight * startScale) / 2;
+        const startCenterX = clamp(anchorX, margin + halfStartWidth, viewport.width - margin - halfStartWidth);
+        const startCenterY = clamp(anchorY, margin + halfStartHeight, viewport.height - margin - halfStartHeight);
 
         return {
             row: selectedCell.row,
             col: selectedCell.col,
             left,
             top,
-            fromX: anchorX - finalCenterX,
-            fromY: anchorY - finalCenterY,
+            fromX: startCenterX - finalCenterX,
+            fromY: startCenterY - finalCenterY,
         };
     }, [selectedCell]);
 
@@ -161,8 +181,8 @@ export const KanjiHoverBox: React.FC<KanjiHoverBoxProps> = ({
                 zIndex: 50,
                 padding: '16px',
                 borderRadius: '12px',
-                maxWidth: 'min(280px, calc(100vw - 24px))',
-                maxHeight: 'calc(100vh - 24px)',
+                maxWidth: 'min(280px, calc(100dvw - 24px))',
+                maxHeight: 'calc(100dvh - 24px)',
                 width: '280px',
                 background: 'var(--bg-panel)',
                 border: '1px solid var(--border-subtle)',
